@@ -9,7 +9,10 @@ import (
 	"time"
 )
 
-const version = "0.1.0"
+const (
+	version     = "0.1.0"
+	defaultPort = 400
+)
 
 type config struct {
 	port int
@@ -23,7 +26,7 @@ type application struct {
 
 func main() {
 	var cfg config
-	flag.IntVar(&cfg.port, "port", 400, "Port")
+	flag.IntVar(&cfg.port, "port", defaultPort, "Port")
 	flag.StringVar(&cfg.env, "env", "dev", "Environment")
 	flag.Parse()
 
