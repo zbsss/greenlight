@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/zbsss/greenlight/internal/data"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, _ *http.Request) {
@@ -16,5 +18,17 @@ func (app *application) viewMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	fmt.Fprintf(w, "Movie %d", id)
+	movie := data.Movie{
+		ID:    id,
+		Title: "Django",
+		Genres: []string{
+			"Tarantino",
+			"Western",
+		},
+	}
+
+	err = app.writeJSON(w, http.StatusOK, movie, nil)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }
