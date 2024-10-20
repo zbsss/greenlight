@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 func secureHeaders(next http.Handler) http.Handler {
@@ -20,18 +23,47 @@ func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(middleware)
 }
 
+const traceIDHeader = "X-Trace-ID"
+
+func withTraceID(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var traceID string
+
+		// Check if the incoming request has a Trace-ID header
+		incomingTraceID := r.Header.Get(traceIDHeader)
+		if incomingTraceID != "" {
+			traceID = incomingTraceID
+		} else {
+			// Generate a new trace ID if not present in the request
+			traceID = uuid.New().String()
+		}
+
+		ctx := context.WithValue(r.Context(), traceIDContextKey, traceID)
+
+		// Set the traceID in the response header
+		w.Header().Set(traceIDHeader, traceID)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			ip     = r.RemoteAddr
-			proto  = r.Proto
-			method = r.Method
-			uri    = r.URL.RequestURI()
+			traceID = traceIDFromContext(r)
+			ip      = r.RemoteAddr
+			proto   = r.Proto
+			method  = r.Method
+			uri     = r.URL.RequestURI()
 		)
 
-		app.logger.Info("received request", "ip", ip, "proto", proto, "method", method, "uri", uri)
+		logger := app.logger.With("traceID", traceID, "ip", ip, "proto", proto, "method", method, "uri", uri)
+		logger.Info("received request")
 
-		next.ServeHTTP(w, r)
+		// Add the logger to the request context
+		ctx := context.WithValue(r.Context(), loggerContextKey, logger)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 

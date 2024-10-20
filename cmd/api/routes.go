@@ -10,16 +10,15 @@ import (
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
 
-	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		app.notFound(w)
-	})
+	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
+	router.NotFound = http.HandlerFunc(app.notFound)
 
 	router.HandlerFunc("GET", "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc("POST", "/v1/movies", app.createMovieHandler)
 	router.HandlerFunc("GET", "/v1/movies/:id", app.viewMovieHandler)
 
 	// standard middleware for all requests
-	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+	standard := alice.New(app.recoverPanic, withTraceID, app.logRequest, secureHeaders)
 
 	return standard.Then(router)
 }
