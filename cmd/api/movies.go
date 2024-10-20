@@ -27,6 +27,11 @@ func (app *application) viewMovieHandler(w http.ResponseWriter, r *http.Request)
 		},
 	}
 
+	if err = movie.OK(); err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, err)
+		return
+	}
+
 	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
 	if err != nil {
 		app.serverError(w, r, err)
