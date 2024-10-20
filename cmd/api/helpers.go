@@ -21,6 +21,14 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
+func (app *application) clientError(w http.ResponseWriter, code int) {
+	http.Error(w, http.StatusText(code), code)
+}
+
+func (app *application) notFound(w http.ResponseWriter) {
+	app.clientError(w, http.StatusNotFound)
+}
+
 func readIDParam(r *http.Request) (int64, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 
@@ -32,11 +40,14 @@ func readIDParam(r *http.Request) (int64, error) {
 	return id, nil
 }
 
-func (app *application) writeJSON(w http.ResponseWriter, status int, data any, headers http.Header) error {
-	js, err := json.Marshal(data)
+type envelope map[string]any
+
+func (app *application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
+	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
 	}
+	js = append(js, '\n')
 
 	for key, value := range headers {
 		w.Header()[key] = value
