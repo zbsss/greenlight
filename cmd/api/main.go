@@ -4,12 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/zbsss/greenlight/internal/model"
 )
 
 const (
@@ -21,24 +25,39 @@ const (
 type config struct {
 	port int
 	env  string
+	db   struct {
+		dsn string
+	}
 }
 
 type application struct {
 	config config
 	logger *slog.Logger
+	db     *model.Queries
 }
 
-func main() {
+func mainNoExit() error {
 	var cfg config
 	flag.IntVar(&cfg.port, "port", defaultPort, "Port")
-	flag.StringVar(&cfg.env, "env", "dev", "Environment")
+	flag.StringVar(&cfg.env, "env", "dev", "Environment (dev|prod)")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:password@localhost/greenlight", "PostgresSQL DSN")
 	flag.Parse()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
+	ctx := context.Background()
+	conn, err := pgx.Connect(ctx, cfg.db.dsn)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	defer conn.Close(ctx)
+
 	app := application{
 		config: cfg,
 		logger: logger,
+		db:     model.New(conn),
 	}
 
 	srv := &http.Server{
@@ -66,10 +85,14 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	if err := srv.Shutdown(ctx); err != nil {
-		app.logger.Error(err.Error())
-		os.Exit(1)
+	ctx, cancel := context.WithTimeout(ctx, shutdownTimeout)
+	defer cancel()
+
+	return srv.Shutdown(ctx)
+}
+
+func main() {
+	if err := mainNoExit(); err != nil {
+		log.Fatalf("%+v", err)
 	}
-	cancel()
 }

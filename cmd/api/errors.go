@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"runtime/debug"
 )
 
 func (app *application) logError(r *http.Request, err error) {
-	app.loggerFromContext(r).Error(err.Error(), "stack", string(debug.Stack()))
+	app.loggerFromContext(r).Error(err.Error(), "trace", fmt.Sprintf("%+v", err))
 }
 
 func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {

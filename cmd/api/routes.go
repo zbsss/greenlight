@@ -15,6 +15,7 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc("GET", "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc("POST", "/v1/movies", app.createMovieHandler)
+	router.HandlerFunc("GET", "/v1/movies", app.listMovies)
 	router.HandlerFunc("GET", "/v1/movies/:id", app.viewMovieHandler)
 
 	// standard middleware for all requests
