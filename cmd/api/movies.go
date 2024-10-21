@@ -7,24 +7,22 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zbsss/greenlight/internal/model"
+	"github.com/zbsss/greenlight/internal/services/movies"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
-	var input model.CreateMovieParams
+	var req movies.CreateMovieRequest
 
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err = input.OK(); err != nil {
-		app.errorResponse(w, r, http.StatusBadRequest, err)
-		return
-	}
-
-	movie, err := app.db.CreateMovie(r.Context(), input)
+	// TODO: fix error handling, MovieService should return ClientError or ServerError
+	// ClientError can have multiple types: InvalidInput, NotFound
+	// this will also help consolidate error handling
+	movie, err := app.movies.CreateMovie(r.Context(), req)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -35,7 +33,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, headers)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"movie": movie}, headers)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -43,13 +41,13 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) listMovies(w http.ResponseWriter, r *http.Request) {
-	movies, err := app.db.ListMovies(r.Context())
+	mvs, err := app.movies.ListMovies(r.Context())
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"movies": movies}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"movies": mvs}, nil)
 	if err != nil {
 		app.serverError(w, r, err)
 		return

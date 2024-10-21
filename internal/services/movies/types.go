@@ -1,4 +1,4 @@
-package model
+package movies
 
 import (
 	"time"
@@ -12,7 +12,22 @@ const (
 	genresMaxCount = 5
 )
 
-func (m *CreateMovieParams) OK() error {
+type MovieResponse struct {
+	ID      int64    `json:"id"`
+	Title   string   `json:"title"`
+	Year    int32    `json:"year"`
+	Runtime Runtime  `json:"runtime,omitempty"`
+	Genres  []string `json:"genres"`
+}
+
+type CreateMovieRequest struct {
+	Title   string   `json:"title"`
+	Year    int32    `json:"year"`
+	Runtime int32    `json:"runtime"`
+	Genres  []string `json:"genres"`
+}
+
+func (m *CreateMovieRequest) OK() error {
 	v := validator.New()
 
 	v.Check(m.Title != "", "title", "must be provided")

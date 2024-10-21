@@ -14,6 +14,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/zbsss/greenlight/internal/model"
+	"github.com/zbsss/greenlight/internal/services/movies"
 )
 
 const (
@@ -34,6 +35,7 @@ type application struct {
 	config config
 	logger *slog.Logger
 	db     *model.Queries
+	movies *movies.MovieService
 }
 
 func mainNoExit() error {
@@ -54,10 +56,13 @@ func mainNoExit() error {
 
 	defer conn.Close(ctx)
 
+	db := model.New(conn)
+
 	app := application{
 		config: cfg,
 		logger: logger,
-		db:     model.New(conn),
+		db:     db,
+		movies: movies.NewMovieService(db),
 	}
 
 	srv := &http.Server{
