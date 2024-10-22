@@ -24,7 +24,7 @@ func (v *Validator) OK() error {
 		return nil
 	}
 
-	return ValidationError{errors: v.errors}
+	return ValidationError{Errors: v.errors}
 }
 
 // AddError adds an error message to the map (so long as no entry already exists for
