@@ -3,6 +3,7 @@ package movies
 import (
 	"time"
 
+	"github.com/zbsss/greenlight/internal/model"
 	"github.com/zbsss/greenlight/internal/validator"
 )
 
@@ -12,7 +13,7 @@ const (
 	genresMaxCount = 5
 )
 
-type MovieResponse struct {
+type Movie struct {
 	ID      int64    `json:"id"`
 	Title   string   `json:"title"`
 	Year    int32    `json:"year"`
@@ -46,4 +47,14 @@ func (m *CreateMovieRequest) OK() error {
 	v.Check(validator.Unique(m.Genres), "genres", "must not contain duplicate values")
 
 	return v.OK()
+}
+
+func transform(movie *model.Movie) *Movie {
+	return &Movie{
+		ID:      movie.ID,
+		Title:   movie.Title,
+		Year:    movie.Year,
+		Runtime: Runtime(movie.Runtime),
+		Genres:  movie.Genres,
+	}
 }

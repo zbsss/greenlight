@@ -1,29 +1,34 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/zbsss/greenlight/internal/services/movies"
+	"github.com/zbsss/greenlight/internal/validator"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var req movies.CreateMovieRequest
 
+	// TODO: when body is empty this will return a simple EOF '{"error": "EOF"}'
+	// which is not helpful at all. Wrap this somehow.
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	// TODO: fix error handling, MovieService should return ClientError or ServerError
-	// ClientError can have multiple types: InvalidInput, NotFound
-	// this will also help consolidate error handling
 	movie, err := app.movies.CreateMovie(r.Context(), req)
 	if err != nil {
+		var validationErr validator.ValidationError
+		if errors.As(err, &validationErr) {
+			app.errorResponse(w, r, http.StatusBadRequest, err)
+			return
+		}
+
 		app.serverError(w, r, err)
 		return
 	}
@@ -61,9 +66,9 @@ func (app *application) viewMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	movie, err := app.db.GetMovie(r.Context(), id)
+	movie, err := app.movies.GetMovie(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, movies.ErrMovieNotFound) {
 			app.notFound(w, r)
 			return
 		}

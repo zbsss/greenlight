@@ -2,6 +2,8 @@ package movies
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/zbsss/greenlight/internal/model"
 )
@@ -14,7 +16,7 @@ func NewMovieService(db *model.Queries) *MovieService {
 	return &MovieService{db: db}
 }
 
-func (s *MovieService) CreateMovie(ctx context.Context, req CreateMovieRequest) (*MovieResponse, error) {
+func (s *MovieService) CreateMovie(ctx context.Context, req CreateMovieRequest) (*Movie, error) {
 	// Validate the input
 	if err := req.OK(); err != nil {
 		return nil, err
@@ -36,25 +38,28 @@ func (s *MovieService) CreateMovie(ctx context.Context, req CreateMovieRequest) 
 	return transform(&movie), nil
 }
 
-func (s *MovieService) ListMovies(ctx context.Context) ([]*MovieResponse, error) {
+func (s *MovieService) ListMovies(ctx context.Context) ([]*Movie, error) {
 	movies, err := s.db.ListMovies(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	response := make([]*MovieResponse, len(movies))
+	response := make([]*Movie, len(movies))
 	for i, movie := range movies {
 		response[i] = transform(&movie)
 	}
 	return response, nil
 }
 
-func transform(movie *model.Movie) *MovieResponse {
-	return &MovieResponse{
-		ID:      movie.ID,
-		Title:   movie.Title,
-		Year:    movie.Year,
-		Runtime: Runtime(movie.Runtime),
-		Genres:  movie.Genres,
+func (s *MovieService) GetMovie(ctx context.Context, id int64) (*Movie, error) {
+	movie, err := s.db.GetMovie(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrMovieNotFound
+		}
+
+		return nil, err
 	}
+
+	return transform(&movie), nil
 }

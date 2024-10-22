@@ -34,7 +34,6 @@ type config struct {
 type application struct {
 	config config
 	logger *slog.Logger
-	db     *model.Queries
 	movies *movies.MovieService
 }
 
@@ -61,7 +60,6 @@ func mainNoExit() error {
 	app := application{
 		config: cfg,
 		logger: logger,
-		db:     db,
 		movies: movies.NewMovieService(db),
 	}
 
