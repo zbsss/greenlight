@@ -3,7 +3,7 @@ package movies
 import (
 	"time"
 
-	"github.com/zbsss/greenlight/internal/model"
+	"github.com/zbsss/greenlight/internal/movies/model"
 	"github.com/zbsss/greenlight/pkg/validator"
 )
 

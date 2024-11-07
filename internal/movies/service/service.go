@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/zbsss/greenlight/internal/model"
+	"github.com/zbsss/greenlight/internal/movies/model"
 )
 
 type MovieService struct {

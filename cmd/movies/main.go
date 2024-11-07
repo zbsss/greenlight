@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/zbsss/greenlight/internal/model"
-	"github.com/zbsss/greenlight/internal/services/movies"
+	"github.com/zbsss/greenlight/internal/movies/model"
+	movies "github.com/zbsss/greenlight/internal/movies/service"
 	"github.com/zbsss/greenlight/pkg/logger"
 )
 

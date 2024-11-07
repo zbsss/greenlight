@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zbsss/greenlight/internal/services/movies"
+	movies "github.com/zbsss/greenlight/internal/movies/service"
 	"github.com/zbsss/greenlight/pkg/validator"
 )
 
