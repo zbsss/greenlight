@@ -1,21 +1,19 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
 	movies "github.com/zbsss/greenlight/internal/movies/service"
+	"github.com/zbsss/greenlight/pkg/json"
 	"github.com/zbsss/greenlight/pkg/validator"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var req movies.CreateMovieRequest
 
-	// TODO: when body is empty this will return a simple EOF '{"error": "EOF"}'
-	// which is not helpful at all. Wrap this somehow.
-	err := json.NewDecoder(r.Body).Decode(&req)
+	err := json.Read(w, r, &req)
 	if err != nil {
 		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
 		return
@@ -38,7 +36,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"movie": movie}, headers)
+	err = json.Write(w, http.StatusCreated, json.Envelope{"movie": movie}, headers)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -52,7 +50,7 @@ func (app *application) listMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"movies": mvs}, nil)
+	err = json.Write(w, http.StatusOK, json.Envelope{"movies": mvs}, nil)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -77,7 +75,7 @@ func (app *application) viewMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
+	err = json.Write(w, http.StatusOK, json.Envelope{"movie": movie}, nil)
 	if err != nil {
 		app.serverError(w, r, err)
 		return

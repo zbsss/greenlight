@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/zbsss/greenlight/pkg/json"
 )
 
 func (app *application) logError(r *http.Request, err error) {
@@ -10,9 +12,9 @@ func (app *application) logError(r *http.Request, err error) {
 }
 
 func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
-	env := envelope{"error": message}
+	env := json.Envelope{"error": message}
 
-	err := app.writeJSON(w, status, env, nil)
+	err := json.Write(w, status, env, nil)
 	if err != nil {
 		app.logError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -2,17 +2,19 @@ package main
 
 import (
 	"net/http"
+
+	"github.com/zbsss/greenlight/pkg/json"
 )
 
 func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
-	data := envelope{
+	data := json.Envelope{
 		"status": "available",
 		"system_info": map[string]string{
 			"environment": app.config.env,
 			"version":     version,
 		}}
 
-	err := app.writeJSON(w, http.StatusOK, data, nil)
+	err := json.Write(w, http.StatusOK, data, nil)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
