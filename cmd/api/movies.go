@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/zbsss/greenlight/internal/services/movies"
-	"github.com/zbsss/greenlight/internal/validator"
+	"github.com/zbsss/greenlight/pkg/validator"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	app.loggerFromContext(r).Info("created movie", "movie", movie)
+	app.log.WithContext(r.Context()).Info("created movie", "movie", movie)
 
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))

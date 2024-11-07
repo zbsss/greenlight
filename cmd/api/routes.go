@@ -5,6 +5,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
+	"github.com/zbsss/greenlight/pkg/middleware"
 )
 
 func (app *application) routes() http.Handler {
@@ -19,7 +20,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc("GET", "/v1/movies/:id", app.viewMovieHandler)
 
 	// standard middleware for all requests
-	standard := alice.New(app.recoverPanic, withTraceID, app.logRequest, secureHeaders)
+	standard := alice.New(app.recoverPanic, middleware.TraceMiddleware, app.logRequest, secureHeaders)
 
 	return standard.Then(router)
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/zbsss/greenlight/internal/model"
 	"github.com/zbsss/greenlight/internal/services/movies"
+	"github.com/zbsss/greenlight/pkg/logger"
 )
 
 const (
@@ -33,7 +34,7 @@ type config struct {
 
 type application struct {
 	config config
-	logger *slog.Logger
+	log    *logger.Logger
 	movies *movies.MovieService
 }
 
@@ -44,12 +45,12 @@ func mainNoExit() error {
 	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:password@localhost/greenlight", "PostgresSQL DSN")
 	flag.Parse()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	mlog := logger.NewLogger()
 
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, cfg.db.dsn)
 	if err != nil {
-		logger.Error(err.Error())
+		mlog.Error(err.Error())
 		os.Exit(1)
 	}
 
@@ -59,7 +60,7 @@ func mainNoExit() error {
 
 	app := application{
 		config: cfg,
-		logger: logger,
+		log:    mlog,
 		movies: movies.NewMovieService(db),
 	}
 
@@ -69,17 +70,17 @@ func mainNoExit() error {
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		ErrorLog:     slog.NewLogLogger(mlog.Handler(), slog.LevelError),
 	}
 
-	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
+	mlog.Info("starting server", "addr", srv.Addr, "env", cfg.env)
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			if err == http.ErrServerClosed {
-				app.logger.Info("server shut down gracefully")
+				app.log.Info("server shut down gracefully")
 			} else {
-				app.logger.Error("server shut down unexpectedly", "error", err.Error())
+				app.log.Error("server shut down unexpectedly", "error", err.Error())
 			}
 		}
 	}()

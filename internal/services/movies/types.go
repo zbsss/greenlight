@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/zbsss/greenlight/internal/model"
-	"github.com/zbsss/greenlight/internal/validator"
+	"github.com/zbsss/greenlight/pkg/validator"
 )
 
 const (
