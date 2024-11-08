@@ -13,9 +13,13 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/zbsss/greenlight/internal/logger"
+	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
+	"github.com/zbsss/greenlight/internal/errs"
+	"github.com/zbsss/greenlight/internal/middleware"
 	"github.com/zbsss/greenlight/internal/movies/model"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
+	"github.com/zbsss/greenlight/internal/rlog"
 )
 
 const (
@@ -34,7 +38,7 @@ type config struct {
 
 type application struct {
 	config config
-	log    *logger.Logger
+	log    *rlog.Logger
 	movies *movies.MovieService
 }
 
@@ -45,12 +49,12 @@ func mainNoExit() error {
 	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:password@localhost/greenlight", "PostgresSQL DSN")
 	flag.Parse()
 
-	mlog := logger.NewLogger()
+	logger := rlog.NewLogger()
 
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, cfg.db.dsn)
 	if err != nil {
-		mlog.Error(err.Error())
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
@@ -58,22 +62,36 @@ func mainNoExit() error {
 
 	db := model.New(conn)
 
-	app := application{
+	app := &application{
 		config: cfg,
-		log:    mlog,
+		log:    logger,
 		movies: movies.NewMovieService(db),
 	}
 
+	router := httprouter.New()
+	router.MethodNotAllowed = http.HandlerFunc(errs.MethodNotAllowed)
+	router.NotFound = http.HandlerFunc(errs.NotFound)
+
+	bindMoviesAPI(app, router)
+
+	// common middleware for all APIs
+	handler := alice.New(
+		middleware.RecoverPanic,
+		rlog.RequestTracingMiddleware(app.log),
+		middleware.LogResponseCode,
+		middleware.SecureHeaders,
+	).Then(router)
+
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      app.routes(),
+		Handler:      handler,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		ErrorLog:     slog.NewLogLogger(mlog.Handler(), slog.LevelError),
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
-	mlog.Info("starting server", "addr", srv.Addr, "env", cfg.env)
+	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
