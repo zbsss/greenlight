@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/zbsss/greenlight/pkg/json"
+	"github.com/zbsss/greenlight/internal/json"
 )
 
 func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {

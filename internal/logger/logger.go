@@ -4,12 +4,9 @@ import (
 	"context"
 	"log/slog"
 	"os"
+
+	"github.com/zbsss/greenlight/internal/contextkeys"
 )
-
-// Key for storing trace ID in context
-type ctxKey string
-
-const TraceIDKey ctxKey = "traceID"
 
 // Logger wraps slog.Logger to provide context-aware logging
 type Logger struct {
@@ -32,7 +29,7 @@ func NewLogger() *Logger {
 
 // WithContext creates a new logger with trace ID from context
 func (l *Logger) WithContext(ctx context.Context) *Logger {
-	traceID := ctx.Value(TraceIDKey)
+	traceID := ctx.Value(contextkeys.TraceIDKey)
 	if traceID == nil {
 		return l
 	}

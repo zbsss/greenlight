@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zbsss/greenlight/internal/json"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
-	"github.com/zbsss/greenlight/pkg/json"
-	"github.com/zbsss/greenlight/pkg/validator"
+	"github.com/zbsss/greenlight/internal/validator"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {

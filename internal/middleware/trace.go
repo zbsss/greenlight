@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/zbsss/greenlight/pkg/logger"
+	"github.com/zbsss/greenlight/internal/contextkeys"
 )
 
 const TraceIDHeader = "X-Trace-ID"
@@ -23,7 +23,7 @@ func TraceMiddleware(next http.Handler) http.Handler {
 			traceID = uuid.New().String()
 		}
 
-		ctx := context.WithValue(r.Context(), logger.TraceIDKey, traceID)
+		ctx := context.WithValue(r.Context(), contextkeys.TraceIDKey, traceID)
 
 		// Set the traceID in the response header
 		w.Header().Set(TraceIDHeader, traceID)

@@ -5,7 +5,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
-	"github.com/zbsss/greenlight/pkg/middleware"
+	"github.com/zbsss/greenlight/internal/middleware"
 )
 
 func (app *application) routes() http.Handler {

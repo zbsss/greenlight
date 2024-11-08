@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zbsss/greenlight/pkg/json"
+	"github.com/zbsss/greenlight/internal/json"
 )
 
 func (app *application) logError(r *http.Request, err error) {

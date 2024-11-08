@@ -7,12 +7,12 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /server ./cmd/api
+RUN go build -o /movies-server ./cmd/movies
 
 FROM alpine:latest
 
-COPY --from=build /server /app/server
+COPY --from=build /movies-server /app/movies-server
 
-CMD ["/app/server"]
+CMD ["/app/movies-server"]
 
 EXPOSE 4000
