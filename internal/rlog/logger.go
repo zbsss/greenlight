@@ -43,7 +43,7 @@ func (l *Logger) With(args ...any) *Logger {
 func FromContext(ctx context.Context) *Logger {
 	log, ok := ctx.Value(requestLoggerKey).(*Logger)
 	if !ok {
-		panic("TraceMiddleware middleware was not used")
+		panic("RequestTracingMiddleware middleware was not used")
 	}
 	return log
 }

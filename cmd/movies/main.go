@@ -72,6 +72,7 @@ func mainNoExit() error {
 	router.MethodNotAllowed = http.HandlerFunc(errs.MethodNotAllowed)
 	router.NotFound = http.HandlerFunc(errs.NotFound)
 
+	bindHealthAPI(app, router)
 	bindMoviesAPI(app, router)
 
 	// common middleware for all APIs
