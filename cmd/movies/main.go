@@ -38,7 +38,7 @@ type config struct {
 
 type application struct {
 	config config
-	log    *rlog.Logger
+	log    *slog.Logger
 	movies *movies.MovieService
 }
 
@@ -49,7 +49,7 @@ func mainNoExit() error {
 	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:password@localhost/greenlight", "PostgresSQL DSN")
 	flag.Parse()
 
-	logger := rlog.NewLogger()
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, cfg.db.dsn)

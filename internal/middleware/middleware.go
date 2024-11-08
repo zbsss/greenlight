@@ -32,10 +32,6 @@ func LogResponseCode(next http.Handler) http.Handler {
 
 		rlog.FromContext(r.Context()).Info(
 			"sending response",
-			"ip", r.RemoteAddr,
-			"proto", r.Proto,
-			"method", r.Method,
-			"uri", r.URL.RequestURI(),
 			"duration", time.Since(start).String(),
 			"statusCode", wrapped.statusCode,
 		)
