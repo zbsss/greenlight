@@ -2,7 +2,7 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries: "internal/movies/model/sql/query.sql"
-    schema: "internal/movies/model/sql/schema.sql"
+    schema: "internal/movies/model/sql/migrations"
     gen:
       go:
         package: "model"
