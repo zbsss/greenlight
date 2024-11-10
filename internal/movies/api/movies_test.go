@@ -8,7 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/zbsss/greenlight/internal/movies/model/mocks"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
-	"github.com/zbsss/greenlight/internal/testserver"
+	"github.com/zbsss/greenlight/internal/server/testserver"
 )
 
 func TestGetMovie(t *testing.T) {

@@ -3,30 +3,21 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/julienschmidt/httprouter"
-	"github.com/justinas/alice"
-	"github.com/zbsss/greenlight/internal/errs"
-	"github.com/zbsss/greenlight/internal/middleware"
 	"github.com/zbsss/greenlight/internal/movies/api"
 	"github.com/zbsss/greenlight/internal/movies/model"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
-	"github.com/zbsss/greenlight/internal/rlog"
+	"github.com/zbsss/greenlight/internal/server"
 )
 
 const (
-	version         = "0.1.0"
-	defaultPort     = 400
-	shutdownTimeout = 10 * time.Second
+	version     = "0.1.0"
+	defaultPort = 400
 )
 
 type config struct {
@@ -70,49 +61,13 @@ func mainNoExit() error {
 	}
 
 	router := httprouter.New()
-	router.MethodNotAllowed = http.HandlerFunc(errs.MethodNotAllowed)
-	router.NotFound = http.HandlerFunc(errs.NotFound)
-
 	bindHealthAPI(app, router)
 	api.BindMoviesAPI(app.movies, router)
 
-	// common middleware for all APIs
-	handler := alice.New(
-		middleware.RecoverPanic,
-		rlog.RequestTracingMiddleware(app.log),
-		middleware.LogResponseCode,
-		middleware.SecureHeaders,
-	).Then(router)
-
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      handler,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
-	}
+	srv := server.New(server.Config{Port: cfg.port}, router, logger)
 
 	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
-
-	go func() {
-		if err := srv.ListenAndServe(); err != nil {
-			if err == http.ErrServerClosed {
-				app.log.Info("server shut down gracefully")
-			} else {
-				app.log.Error("server shut down unexpectedly", "error", err.Error())
-			}
-		}
-	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	ctx, cancel := context.WithTimeout(ctx, shutdownTimeout)
-	defer cancel()
-
-	return srv.Shutdown(ctx)
+	return srv.ListenAndShutdownGracefully(ctx)
 }
 
 func main() {
