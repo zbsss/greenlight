@@ -18,7 +18,7 @@ func TestGetMovie(t *testing.T) {
 
 	BindMoviesAPI(ms, router)
 
-	ts := testserver.New(t, router)
+	ts := testserver.New(router)
 	defer ts.Close()
 
 	tcs := []struct {

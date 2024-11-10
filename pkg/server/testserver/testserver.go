@@ -12,7 +12,7 @@ type Server struct {
 	*httptest.Server
 }
 
-func New(t *testing.T, h http.Handler) *Server {
+func New(h http.Handler) *Server {
 	ts := httptest.NewTLSServer(h)
 
 	ts.Client().CheckRedirect = func(_ *http.Request, _ []*http.Request) error {

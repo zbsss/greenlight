@@ -32,6 +32,7 @@ type Server struct {
 func New(cfg Config, router *httprouter.Router, log *slog.Logger) *Server {
 	router.MethodNotAllowed = http.HandlerFunc(errs.MethodNotAllowed)
 	router.NotFound = http.HandlerFunc(errs.NotFound)
+	router.HandlerFunc("GET", "/info/health", healthcheck)
 
 	// common middleware for all APIs
 	handler := alice.New(
