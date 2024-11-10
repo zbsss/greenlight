@@ -3,6 +3,7 @@ module github.com/zbsss/greenlight
 go 1.23
 
 require (
+	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/julienschmidt/httprouter v1.3.0

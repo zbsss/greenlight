@@ -9,10 +9,10 @@ import (
 )
 
 type MovieService struct {
-	db *model.Queries
+	db model.Querier
 }
 
-func NewMovieService(db *model.Queries) *MovieService {
+func NewMovieService(db model.Querier) *MovieService {
 	return &MovieService{db: db}
 }
 
