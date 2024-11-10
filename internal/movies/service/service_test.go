@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/zbsss/greenlight/internal/movies/model/mocks"
-	"github.com/zbsss/greenlight/internal/validator"
+	"github.com/zbsss/greenlight/pkg/validator"
 )
 
 func TestCreateMovie(t *testing.T) {

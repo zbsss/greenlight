@@ -12,7 +12,7 @@ import (
 	"github.com/zbsss/greenlight/internal/movies/api"
 	"github.com/zbsss/greenlight/internal/movies/model"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
-	"github.com/zbsss/greenlight/internal/server"
+	"github.com/zbsss/greenlight/pkg/server"
 )
 
 const (
@@ -46,8 +46,7 @@ func mainNoExit() error {
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, cfg.db.dsn)
 	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	defer conn.Close(ctx)

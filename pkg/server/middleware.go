@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/zbsss/greenlight/internal/errs"
-	"github.com/zbsss/greenlight/internal/rlog"
+	"github.com/zbsss/greenlight/pkg/errs"
+	"github.com/zbsss/greenlight/pkg/rlog"
 )
 
 type wrappedWriter struct {

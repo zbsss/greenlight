@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/zbsss/greenlight/internal/body"
-	"github.com/zbsss/greenlight/internal/errs"
+	"github.com/zbsss/greenlight/pkg/body"
+	"github.com/zbsss/greenlight/pkg/errs"
 )
 
 func bindHealthAPI(app *application, router *httprouter.Router) {

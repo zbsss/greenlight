@@ -12,8 +12,8 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
-	"github.com/zbsss/greenlight/internal/errs"
-	"github.com/zbsss/greenlight/internal/rlog"
+	"github.com/zbsss/greenlight/pkg/errs"
+	"github.com/zbsss/greenlight/pkg/rlog"
 )
 
 const (

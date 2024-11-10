@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zbsss/greenlight/internal/body"
-	"github.com/zbsss/greenlight/internal/rlog"
+	"github.com/zbsss/greenlight/pkg/body"
+	"github.com/zbsss/greenlight/pkg/rlog"
 )
 
 func logError(r *http.Request, err error) {

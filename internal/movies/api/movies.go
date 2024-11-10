@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/zbsss/greenlight/internal/body"
-	"github.com/zbsss/greenlight/internal/errs"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
-	"github.com/zbsss/greenlight/internal/rlog"
-	"github.com/zbsss/greenlight/internal/validator"
+	"github.com/zbsss/greenlight/pkg/body"
+	"github.com/zbsss/greenlight/pkg/errs"
+	"github.com/zbsss/greenlight/pkg/rlog"
+	"github.com/zbsss/greenlight/pkg/validator"
 )
 
 func BindMoviesAPI(ms *movies.MovieService, router *httprouter.Router) {
