@@ -17,6 +17,7 @@ import (
 	"github.com/justinas/alice"
 	"github.com/zbsss/greenlight/internal/errs"
 	"github.com/zbsss/greenlight/internal/middleware"
+	"github.com/zbsss/greenlight/internal/movies/api"
 	"github.com/zbsss/greenlight/internal/movies/model"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
 	"github.com/zbsss/greenlight/internal/rlog"
@@ -73,7 +74,7 @@ func mainNoExit() error {
 	router.NotFound = http.HandlerFunc(errs.NotFound)
 
 	bindHealthAPI(app, router)
-	bindMoviesAPI(app, router)
+	api.BindMoviesAPI(app.movies, router)
 
 	// common middleware for all APIs
 	handler := alice.New(

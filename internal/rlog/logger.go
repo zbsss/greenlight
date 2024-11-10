@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/google/uuid"
 )
@@ -15,11 +16,17 @@ const (
 	requestLoggerKey ctxKey = "requestLogger"
 )
 
+var defaultLogger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 // FromContext returns the Logger instance from the given context.
 func FromContext(ctx context.Context) *slog.Logger {
 	log, ok := ctx.Value(requestLoggerKey).(*slog.Logger)
 	if !ok {
-		panic("RequestTracingMiddleware middleware was not used")
+		log = defaultLogger
+		log.Warn(
+			"Request logger not found in context, using default logger." +
+				" Probably RequestTracingMiddleware middleware was not used",
+		)
 	}
 	return log
 }

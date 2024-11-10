@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"errors"
@@ -13,8 +13,8 @@ import (
 	"github.com/zbsss/greenlight/internal/validator"
 )
 
-func bindMoviesAPI(app *application, router *httprouter.Router) {
-	api := moviesAPI{app: app}
+func BindMoviesAPI(ms *movies.MovieService, router *httprouter.Router) {
+	api := moviesAPI{ms: ms}
 
 	router.HandlerFunc("POST", "/v1/movies", api.create)
 	router.HandlerFunc("GET", "/v1/movies", api.list)
@@ -22,7 +22,7 @@ func bindMoviesAPI(app *application, router *httprouter.Router) {
 }
 
 type moviesAPI struct {
-	app *application
+	ms *movies.MovieService
 }
 
 func (api *moviesAPI) create(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,7 @@ func (api *moviesAPI) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, err := api.app.movies.CreateMovie(r.Context(), req)
+	movie, err := api.ms.CreateMovie(r.Context(), req)
 	if err != nil {
 		var validationErr validator.ValidationError
 		if errors.As(err, &validationErr) {
@@ -59,7 +59,7 @@ func (api *moviesAPI) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *moviesAPI) list(w http.ResponseWriter, r *http.Request) {
-	mvs, err := api.app.movies.ListMovies(r.Context())
+	mvs, err := api.ms.ListMovies(r.Context())
 	if err != nil {
 		errs.ServerError(w, r, err)
 		return
@@ -79,7 +79,7 @@ func (api *moviesAPI) view(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, err := api.app.movies.GetMovie(r.Context(), id)
+	movie, err := api.ms.GetMovie(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, movies.ErrMovieNotFound) {
 			errs.NotFound(w, r)
