@@ -10,22 +10,22 @@ import (
 )
 
 const createMovie = `-- name: CreateMovie :one
-INSERT INTO movies (title, year, runtime, genres)
-VALUES ($1, $2, $3, $4) RETURNING id, created_at, title, year, runtime, genres, version
+INSERT INTO movies (title, year, runtime_min, genres)
+VALUES ($1, $2, $3, $4) RETURNING id, created_at, title, year, runtime_min, genres, version
 `
 
 type CreateMovieParams struct {
-	Title   string   `json:"title"`
-	Year    int32    `json:"year"`
-	Runtime int32    `json:"runtime"`
-	Genres  []string `json:"genres"`
+	Title      string   `json:"title"`
+	Year       int32    `json:"year"`
+	RuntimeMin int32    `json:"runtimeMin"`
+	Genres     []string `json:"genres"`
 }
 
 func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie, error) {
 	row := q.db.QueryRow(ctx, createMovie,
 		arg.Title,
 		arg.Year,
-		arg.Runtime,
+		arg.RuntimeMin,
 		arg.Genres,
 	)
 	var i Movie
@@ -34,7 +34,7 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 		&i.CreatedAt,
 		&i.Title,
 		&i.Year,
-		&i.Runtime,
+		&i.RuntimeMin,
 		&i.Genres,
 		&i.Version,
 	)
@@ -42,7 +42,7 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 }
 
 const getMovie = `-- name: GetMovie :one
-SELECT id, created_at, title, year, runtime, genres, version FROM movies
+SELECT id, created_at, title, year, runtime_min, genres, version FROM movies
 WHERE id = $1
 `
 
@@ -54,7 +54,7 @@ func (q *Queries) GetMovie(ctx context.Context, id int64) (Movie, error) {
 		&i.CreatedAt,
 		&i.Title,
 		&i.Year,
-		&i.Runtime,
+		&i.RuntimeMin,
 		&i.Genres,
 		&i.Version,
 	)
@@ -62,7 +62,7 @@ func (q *Queries) GetMovie(ctx context.Context, id int64) (Movie, error) {
 }
 
 const listMovies = `-- name: ListMovies :many
-SELECT id, created_at, title, year, runtime, genres, version FROM movies
+SELECT id, created_at, title, year, runtime_min, genres, version FROM movies
 `
 
 func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
@@ -79,7 +79,7 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 			&i.CreatedAt,
 			&i.Title,
 			&i.Year,
-			&i.Runtime,
+			&i.RuntimeMin,
 			&i.Genres,
 			&i.Version,
 		); err != nil {

@@ -25,10 +25,10 @@ func TestCreateMovie(t *testing.T) {
 		{
 			name: "valid input",
 			input: CreateMovieRequest{
-				Title:   "Casablanca",
-				Year:    1942,
-				Runtime: 102,
-				Genres:  []string{"drama", "romance", "war"},
+				Title:      "Casablanca",
+				Year:       1942,
+				RuntimeMin: 102,
+				Genres:     []string{"drama", "romance", "war"},
 			},
 			expectedMovie: &Movie{
 				ID:      2,
@@ -46,10 +46,10 @@ func TestCreateMovie(t *testing.T) {
 		{
 			name: "db error",
 			input: CreateMovieRequest{
-				Title:   "Casablanca",
-				Year:    1942,
-				Runtime: 102,
-				Genres:  []string{"drama", "romance", "war"},
+				Title:      "Casablanca",
+				Year:       1942,
+				RuntimeMin: 102,
+				Genres:     []string{"drama", "romance", "war"},
 			},
 			injectDBError: errors.New("something went wrong"),
 			expectedError: errors.New("something went wrong"),

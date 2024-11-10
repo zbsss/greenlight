@@ -22,10 +22,10 @@ type Movie struct {
 }
 
 type CreateMovieRequest struct {
-	Title   string   `json:"title"`
-	Year    int32    `json:"year"`
-	Runtime int32    `json:"runtime"`
-	Genres  []string `json:"genres"`
+	Title      string   `json:"title"`
+	Year       int32    `json:"year"`
+	RuntimeMin int32    `json:"runtimeMin"`
+	Genres     []string `json:"genres"`
 }
 
 func (m *CreateMovieRequest) OK() error {
@@ -38,8 +38,8 @@ func (m *CreateMovieRequest) OK() error {
 	v.Check(m.Year >= yearMin, "year", "must be greater than 1888")
 	v.Check(int(m.Year) <= time.Now().Year(), "year", "must not be in the future")
 
-	v.Check(m.Runtime != 0, "runtime", "must be provided")
-	v.Check(m.Runtime > 0, "runtime", "must be a positive integer")
+	v.Check(m.RuntimeMin != 0, "runtimeMin", "must be provided")
+	v.Check(m.RuntimeMin > 0, "runtimeMin", "must be a positive integer")
 
 	v.Check(m.Genres != nil, "genres", "must be provided")
 	v.Check(len(m.Genres) >= 1, "genres", "must contain at least 1 genre")
@@ -54,7 +54,7 @@ func transform(movie *model.Movie) *Movie {
 		ID:      movie.ID,
 		Title:   movie.Title,
 		Year:    movie.Year,
-		Runtime: Runtime(movie.Runtime),
+		Runtime: Runtime(movie.RuntimeMin),
 		Genres:  movie.Genres,
 	}
 }

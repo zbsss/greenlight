@@ -2,7 +2,7 @@
 SELECT * FROM movies;
 
 -- name: CreateMovie :one
-INSERT INTO movies (title, year, runtime, genres)
+INSERT INTO movies (title, year, runtime_min, genres)
 VALUES ($1, $2, $3, $4) RETURNING *;
 
 -- name: GetMovie :one

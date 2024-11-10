@@ -23,10 +23,10 @@ func (s *MovieService) CreateMovie(ctx context.Context, req CreateMovieRequest) 
 	}
 
 	params := model.CreateMovieParams{
-		Title:   req.Title,
-		Year:    req.Year,
-		Runtime: req.Runtime,
-		Genres:  req.Genres,
+		Title:      req.Title,
+		Year:       req.Year,
+		RuntimeMin: req.RuntimeMin,
+		Genres:     req.Genres,
 	}
 
 	movie, err := s.db.CreateMovie(ctx, params)

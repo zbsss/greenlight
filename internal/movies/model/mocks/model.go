@@ -30,9 +30,9 @@ func (mq *MockQueries) Reset() {
 			CreatedAt: pgtype.Timestamptz{
 				Time: time.Now(),
 			},
-			Title:   "Django",
-			Year:    2017,
-			Runtime: 120,
+			Title:      "Django",
+			Year:       2017,
+			RuntimeMin: 120,
 			Genres: []string{
 				"action",
 			},
@@ -66,10 +66,10 @@ func (mq *MockQueries) CreateMovie(_ context.Context, arg model.CreateMovieParam
 		CreatedAt: pgtype.Timestamptz{
 			Time: time.Now(),
 		},
-		Title:   arg.Title,
-		Year:    arg.Year,
-		Runtime: arg.Runtime,
-		Genres:  arg.Genres,
+		Title:      arg.Title,
+		Year:       arg.Year,
+		RuntimeMin: arg.RuntimeMin,
+		Genres:     arg.Genres,
 	}
 
 	mq.movies[movie.ID] = movie
