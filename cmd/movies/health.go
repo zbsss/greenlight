@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/zbsss/greenlight/internal/body"
 	"github.com/zbsss/greenlight/internal/errs"
-	"github.com/zbsss/greenlight/internal/json"
 )
 
 func bindHealthAPI(app *application, router *httprouter.Router) {
@@ -19,14 +19,14 @@ type healthAPI struct {
 }
 
 func (api *healthAPI) healthcheck(w http.ResponseWriter, r *http.Request) {
-	data := json.Envelope{
+	data := body.Envelope{
 		"status": "available",
 		"system_info": map[string]string{
 			"environment": api.app.config.env,
 			"version":     version,
 		}}
 
-	err := json.Write(w, http.StatusOK, data, nil)
+	err := body.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		errs.ServerError(w, r, err)
 		return

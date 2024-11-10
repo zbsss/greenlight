@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zbsss/greenlight/internal/json"
+	"github.com/zbsss/greenlight/internal/body"
 	"github.com/zbsss/greenlight/internal/rlog"
 )
 
@@ -13,9 +13,9 @@ func logError(r *http.Request, err error) {
 }
 
 func errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
-	env := json.Envelope{"error": message}
+	env := body.Envelope{"error": message}
 
-	err := json.Write(w, status, env, nil)
+	err := body.WriteJSON(w, status, env, nil)
 	if err != nil {
 		logError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -1,4 +1,4 @@
-package json
+package body
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 
 type Envelope map[string]any
 
-func Write(w http.ResponseWriter, status int, data Envelope, headers http.Header) error {
+func WriteJSON(w http.ResponseWriter, status int, data Envelope, headers http.Header) error {
 	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func Write(w http.ResponseWriter, status int, data Envelope, headers http.Header
 	return err
 }
 
-func Read(w http.ResponseWriter, r *http.Request, dst any) error {
+func ReadJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	// Use http.MaxBytesReader to limit the size of the request body to 1MB.
 	const maxBytes = 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))

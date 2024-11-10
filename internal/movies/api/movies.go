@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/zbsss/greenlight/internal/body"
 	"github.com/zbsss/greenlight/internal/errs"
-	"github.com/zbsss/greenlight/internal/json"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
 	"github.com/zbsss/greenlight/internal/rlog"
 	"github.com/zbsss/greenlight/internal/validator"
@@ -28,7 +28,7 @@ type moviesAPI struct {
 func (api *moviesAPI) create(w http.ResponseWriter, r *http.Request) {
 	var req movies.CreateMovieRequest
 
-	err := json.Read(w, r, &req)
+	err := body.ReadJSON(w, r, &req)
 	if err != nil {
 		errs.BadRequest(w, r, err)
 		return
@@ -51,7 +51,7 @@ func (api *moviesAPI) create(w http.ResponseWriter, r *http.Request) {
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
 
-	err = json.Write(w, http.StatusCreated, json.Envelope{"movie": movie}, headers)
+	err = body.WriteJSON(w, http.StatusCreated, body.Envelope{"movie": movie}, headers)
 	if err != nil {
 		errs.ServerError(w, r, err)
 		return
@@ -65,7 +65,7 @@ func (api *moviesAPI) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = json.Write(w, http.StatusOK, json.Envelope{"movies": mvs}, nil)
+	err = body.WriteJSON(w, http.StatusOK, body.Envelope{"movies": mvs}, nil)
 	if err != nil {
 		errs.ServerError(w, r, err)
 		return
@@ -90,7 +90,7 @@ func (api *moviesAPI) view(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = json.Write(w, http.StatusOK, json.Envelope{"movie": movie}, nil)
+	err = body.WriteJSON(w, http.StatusOK, body.Envelope{"movie": movie}, nil)
 	if err != nil {
 		errs.ServerError(w, r, err)
 		return
