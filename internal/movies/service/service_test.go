@@ -11,6 +11,10 @@ import (
 	"github.com/zbsss/greenlight/pkg/validator"
 )
 
+var (
+	errInjectedDBError = errors.New("injected database error")
+)
+
 // testCase represents a common test case structure for movie service operations
 type testCase struct {
 	name          string
@@ -109,8 +113,8 @@ func TestCreateMovie(t *testing.T) {
 		{
 			name:          "db error",
 			input:         validMovieInput(),
-			injectDBError: errors.New("something went wrong"),
-			expectedError: errors.New("something went wrong"),
+			injectDBError: errInjectedDBError,
+			expectedError: errInjectedDBError,
 		},
 	}
 
@@ -148,8 +152,8 @@ func TestUpdateMovie(t *testing.T) {
 		{
 			name:          "db error",
 			input:         validMovieInput(),
-			injectDBError: errors.New("something went wrong"),
-			expectedError: errors.New("something went wrong"),
+			injectDBError: errInjectedDBError,
+			expectedError: errInjectedDBError,
 		},
 	}
 
