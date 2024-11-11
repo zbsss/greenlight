@@ -105,3 +105,28 @@ func (mq *MockQueries) ListMovies(_ context.Context) ([]model.Movie, error) {
 
 	return movies, nil
 }
+
+func (mq *MockQueries) UpdateMovie(_ context.Context, arg model.UpdateMovieParams) (model.Movie, error) {
+	if err := mq.checkForFailure(); err != nil {
+		return model.Movie{}, err
+	}
+
+	oldMovie, ok := mq.movies[arg.ID]
+
+	if !ok {
+		return model.Movie{}, sql.ErrNoRows
+	}
+
+	newMovie := model.Movie{
+		ID:         arg.ID,
+		Version:    oldMovie.Version + 1,
+		CreatedAt:  oldMovie.CreatedAt,
+		Title:      arg.Title,
+		Year:       arg.Year,
+		RuntimeMin: arg.RuntimeMin,
+		Genres:     arg.Genres,
+	}
+
+	mq.movies[newMovie.ID] = newMovie
+	return newMovie, nil
+}

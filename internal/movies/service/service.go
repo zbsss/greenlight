@@ -16,17 +16,17 @@ func NewMovieService(db model.Querier) *MovieService {
 	return &MovieService{db: db}
 }
 
-func (s *MovieService) CreateMovie(ctx context.Context, req CreateMovieRequest) (*Movie, error) {
+func (s *MovieService) CreateMovie(ctx context.Context, input MovieInput) (*Movie, error) {
 	// Validate the input
-	if err := req.OK(); err != nil {
+	if err := input.OK(); err != nil {
 		return nil, err
 	}
 
 	params := model.CreateMovieParams{
-		Title:      req.Title,
-		Year:       req.Year,
-		RuntimeMin: req.RuntimeMin,
-		Genres:     req.Genres,
+		Title:      input.Title,
+		Year:       input.Year,
+		RuntimeMin: input.RuntimeMin,
+		Genres:     input.Genres,
 	}
 
 	movie, err := s.db.CreateMovie(ctx, params)
@@ -53,6 +53,31 @@ func (s *MovieService) ListMovies(ctx context.Context) ([]*Movie, error) {
 
 func (s *MovieService) GetMovie(ctx context.Context, id int64) (*Movie, error) {
 	movie, err := s.db.GetMovie(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrMovieNotFound
+		}
+
+		return nil, err
+	}
+
+	return transform(&movie), nil
+}
+
+func (s *MovieService) UpdateMovie(ctx context.Context, id int64, input MovieInput) (*Movie, error) {
+	if err := input.OK(); err != nil {
+		return nil, err
+	}
+
+	params := model.UpdateMovieParams{
+		ID:         id,
+		Title:      input.Title,
+		Year:       input.Year,
+		RuntimeMin: input.RuntimeMin,
+		Genres:     input.Genres,
+	}
+
+	movie, err := s.db.UpdateMovie(ctx, params)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrMovieNotFound

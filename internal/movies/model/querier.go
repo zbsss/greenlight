@@ -12,6 +12,7 @@ type Querier interface {
 	CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie, error)
 	GetMovie(ctx context.Context, id int64) (Movie, error)
 	ListMovies(ctx context.Context) ([]Movie, error)
+	UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie, error)
 }
 
 var _ Querier = (*Queries)(nil)
