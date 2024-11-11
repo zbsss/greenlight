@@ -38,7 +38,7 @@ func setupTest(t *testing.T) testHelpers {
 	return testHelpers{t: t, model: mockModel, service: service}
 }
 
-func (h testHelpers) runTestCase(tc testCase, operation func(context.Context, int64, MovieInput) (*Movie, error)) {
+func (h testHelpers) runTestCase(tc *testCase, operation func(context.Context, int64, MovieInput) (*Movie, error)) {
 	h.t.Helper()
 
 	h.model.Reset()
@@ -120,7 +120,7 @@ func TestCreateMovie(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(_ *testing.T) {
-			h.runTestCase(tc, func(ctx context.Context, _ int64, input MovieInput) (*Movie, error) {
+			h.runTestCase(&tc, func(ctx context.Context, _ int64, input MovieInput) (*Movie, error) {
 				return h.service.CreateMovie(ctx, input)
 			})
 		})
@@ -159,7 +159,7 @@ func TestUpdateMovie(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(_ *testing.T) {
-			h.runTestCase(tc, h.service.UpdateMovie)
+			h.runTestCase(&tc, h.service.UpdateMovie)
 		})
 	}
 }
