@@ -19,16 +19,17 @@ type Movie struct {
 	Year    int32    `json:"year"`
 	Runtime Runtime  `json:"runtime,omitempty"`
 	Genres  []string `json:"genres"`
+	Version int32    `json:"version"`
 }
 
-type CreateMovieRequest struct {
+type MovieInput struct {
 	Title      string   `json:"title"`
 	Year       int32    `json:"year"`
 	RuntimeMin int32    `json:"runtimeMin"`
 	Genres     []string `json:"genres"`
 }
 
-func (m *CreateMovieRequest) OK() error {
+func (m *MovieInput) OK() error {
 	v := validator.New()
 
 	v.Check(m.Title != "", "title", "must be provided")
@@ -56,5 +57,6 @@ func transform(movie *model.Movie) *Movie {
 		Year:    movie.Year,
 		Runtime: Runtime(movie.RuntimeMin),
 		Genres:  movie.Genres,
+		Version: movie.Version,
 	}
 }

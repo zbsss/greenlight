@@ -92,3 +92,39 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 	}
 	return items, nil
 }
+
+const updateMovie = `-- name: UpdateMovie :one
+UPDATE movies
+SET title = $2, year = $3, runtime_min = $4, genres = $5, version = version + 1
+WHERE id = $1
+RETURNING id, created_at, title, year, runtime_min, genres, version
+`
+
+type UpdateMovieParams struct {
+	ID         int64    `json:"id"`
+	Title      string   `json:"title"`
+	Year       int32    `json:"year"`
+	RuntimeMin int32    `json:"runtimeMin"`
+	Genres     []string `json:"genres"`
+}
+
+func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie, error) {
+	row := q.db.QueryRow(ctx, updateMovie,
+		arg.ID,
+		arg.Title,
+		arg.Year,
+		arg.RuntimeMin,
+		arg.Genres,
+	)
+	var i Movie
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Title,
+		&i.Year,
+		&i.RuntimeMin,
+		&i.Genres,
+		&i.Version,
+	)
+	return i, err
+}
