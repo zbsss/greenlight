@@ -7,23 +7,15 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/zbsss/greenlight/internal/movies/model"
 	"github.com/zbsss/greenlight/internal/movies/model/mocks"
 	"github.com/zbsss/greenlight/pkg/validator"
+	"k8s.io/utils/ptr"
 )
 
 var (
 	errInjectedDBError = errors.New("injected database error")
 )
-
-// testCase represents a common test case structure for movie service operations
-type testCase struct {
-	name          string
-	id            int64
-	input         MovieInput
-	injectDBError error
-	expectedMovie *Movie
-	expectedError error
-}
 
 // testHelpers contains common utilities for testing movie operations
 type testHelpers struct {
@@ -36,19 +28,6 @@ func setupTest(t *testing.T) testHelpers {
 	mockModel := mocks.NewMockQueries()
 	service := NewMovieService(mockModel)
 	return testHelpers{t: t, model: mockModel, service: service}
-}
-
-func (h testHelpers) runTestCase(tc *testCase, operation func(context.Context, int64, MovieInput) (*Movie, error)) {
-	h.t.Helper()
-
-	h.model.Reset()
-	if tc.injectDBError != nil {
-		h.model.FailOnNextCall(tc.injectDBError)
-	}
-
-	actualMovie, err := operation(context.Background(), tc.id, tc.input)
-	h.assertError(tc.expectedError, err)
-	h.assertMovie(tc.expectedMovie, actualMovie)
 }
 
 func (h testHelpers) assertError(expected, actual error) {
@@ -75,44 +54,44 @@ func (h testHelpers) assertMovie(expected, actual *Movie) {
 	}
 }
 
-// Test data factories
-func validMovieInput() MovieInput {
-	return MovieInput{
+func TestCreateMovie(t *testing.T) {
+	h := setupTest(t)
+
+	validCreateMovie := CreateMovieRequest{
 		Title:      "Casablanca",
 		Year:       1942,
 		RuntimeMin: 102,
 		Genres:     []string{"drama", "romance", "war"},
 	}
-}
-
-func movieResult(id int64, version int32) *Movie {
-	return &Movie{
-		ID:      id,
-		Version: version,
+	expectedMovie := &Movie{
+		ID:      1,
+		Version: 1,
 		Title:   "Casablanca",
 		Year:    1942,
 		Runtime: Runtime(102),
 		Genres:  []string{"drama", "romance", "war"},
 	}
-}
 
-func TestCreateMovie(t *testing.T) {
-	h := setupTest(t)
-
-	tcs := []testCase{
+	tcs := []struct {
+		name          string
+		input         CreateMovieRequest
+		injectDBError error
+		expectedMovie *Movie
+		expectedError error
+	}{
 		{
 			name:          "valid input",
-			input:         validMovieInput(),
-			expectedMovie: movieResult(2, 1),
+			input:         validCreateMovie,
+			expectedMovie: expectedMovie,
 		},
 		{
 			name:          "empty input",
-			input:         MovieInput{},
+			input:         CreateMovieRequest{},
 			expectedError: validator.ValidationError{},
 		},
 		{
 			name:          "db error",
-			input:         validMovieInput(),
+			input:         validCreateMovie,
 			injectDBError: errInjectedDBError,
 			expectedError: errInjectedDBError,
 		},
@@ -120,38 +99,111 @@ func TestCreateMovie(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(_ *testing.T) {
-			h.runTestCase(&tc, func(ctx context.Context, _ int64, input MovieInput) (*Movie, error) {
-				return h.service.CreateMovie(ctx, input)
-			})
+			h.model.Reset()
+			if tc.injectDBError != nil {
+				h.model.FailOnNextCall(tc.injectDBError)
+			}
+
+			actualMovie, err := h.service.CreateMovie(context.Background(), tc.input)
+			h.assertError(tc.expectedError, err)
+			h.assertMovie(tc.expectedMovie, actualMovie)
 		})
 	}
 }
-
 func TestUpdateMovie(t *testing.T) {
 	h := setupTest(t)
 
-	tcs := []testCase{
+	existingMovie := model.Movie{
+		ID:         1,
+		Version:    1,
+		Title:      "Django",
+		Year:       2017,
+		RuntimeMin: 120,
+		Genres:     []string{"action"},
+	}
+
+	// Base expected movie that represents the movie with just the version incremented
+	baseExpected := &Movie{
+		ID:      1,
+		Version: 2,
+		Title:   "Django",
+		Year:    2017,
+		Runtime: Runtime(120),
+		Genres:  []string{"action"},
+	}
+
+	// Helper function to clone and modify the base expected movie
+	cloneWithOverrides := func(overrides func(*Movie)) *Movie {
+		clone := *baseExpected // Create a shallow copy
+		if overrides != nil {
+			overrides(&clone)
+		}
+		return &clone
+	}
+
+	tcs := []struct {
+		name          string
+		id            int64
+		input         UpdateMovieRequest
+		injectDBError error
+		expectedMovie *Movie
+		expectedError error
+	}{
 		{
-			name:          "valid input",
-			id:            1,
-			input:         validMovieInput(),
-			expectedMovie: movieResult(1, 2),
+			name: "update title",
+			id:   1,
+			input: UpdateMovieRequest{
+				Title: ptr.To("Django Unchained"),
+			},
+			expectedMovie: cloneWithOverrides(func(m *Movie) {
+				m.Title = "Django Unchained"
+			}),
 		},
 		{
-			name:          "empty input",
+			name: "update year",
+			id:   1,
+			input: UpdateMovieRequest{
+				Year: ptr.To[int32](2018),
+			},
+			expectedMovie: cloneWithOverrides(func(m *Movie) {
+				m.Year = 2018
+			}),
+		},
+		{
+			name: "update runtime",
+			id:   1,
+			input: UpdateMovieRequest{
+				RuntimeMin: ptr.To[int32](121),
+			},
+			expectedMovie: cloneWithOverrides(func(m *Movie) {
+				m.Runtime = Runtime(121)
+			}),
+		},
+		{
+			name: "update genres",
+			id:   1,
+			input: UpdateMovieRequest{
+				Genres: []string{"comedy"},
+			},
+			expectedMovie: cloneWithOverrides(func(m *Movie) {
+				m.Genres = []string{"comedy"}
+			}),
+		},
+		{
+			name:          "empty update",
 			id:            1,
-			input:         MovieInput{},
-			expectedError: validator.ValidationError{},
+			input:         UpdateMovieRequest{},
+			expectedMovie: cloneWithOverrides(nil), // Use base expected without modifications
 		},
 		{
 			name:          "not found",
 			id:            2,
-			input:         validMovieInput(),
+			input:         UpdateMovieRequest{},
 			expectedError: ErrMovieNotFound,
 		},
 		{
 			name:          "db error",
-			input:         validMovieInput(),
+			input:         UpdateMovieRequest{},
 			injectDBError: errInjectedDBError,
 			expectedError: errInjectedDBError,
 		},
@@ -159,7 +211,14 @@ func TestUpdateMovie(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(_ *testing.T) {
-			h.runTestCase(&tc, h.service.UpdateMovie)
+			h.model.Reset(existingMovie)
+			if tc.injectDBError != nil {
+				h.model.FailOnNextCall(tc.injectDBError)
+			}
+
+			actualMovie, err := h.service.UpdateMovie(context.Background(), tc.id, tc.input)
+			h.assertError(tc.expectedError, err)
+			h.assertMovie(tc.expectedMovie, actualMovie)
 		})
 	}
 }

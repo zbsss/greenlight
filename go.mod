@@ -8,6 +8,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/justinas/alice v1.2.0
+	k8s.io/utils v0.0.0-20241104163129-6fe5fd82f078
 )
 
 require (

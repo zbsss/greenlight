@@ -16,20 +16,18 @@ func NewMovieService(db model.Querier) *MovieService {
 	return &MovieService{db: db}
 }
 
-func (s *MovieService) CreateMovie(ctx context.Context, input MovieInput) (*Movie, error) {
+func (s *MovieService) CreateMovie(ctx context.Context, input CreateMovieRequest) (*Movie, error) {
 	// Validate the input
-	if err := input.OK(); err != nil {
+	if err := movieInput(input).OK(); err != nil {
 		return nil, err
 	}
 
-	params := model.CreateMovieParams{
+	movie, err := s.db.CreateMovie(ctx, model.CreateMovieParams{
 		Title:      input.Title,
 		Year:       input.Year,
 		RuntimeMin: input.RuntimeMin,
 		Genres:     input.Genres,
-	}
-
-	movie, err := s.db.CreateMovie(ctx, params)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -64,20 +62,8 @@ func (s *MovieService) GetMovie(ctx context.Context, id int64) (*Movie, error) {
 	return transform(&movie), nil
 }
 
-func (s *MovieService) UpdateMovie(ctx context.Context, id int64, input MovieInput) (*Movie, error) {
-	if err := input.OK(); err != nil {
-		return nil, err
-	}
-
-	params := model.UpdateMovieParams{
-		ID:         id,
-		Title:      input.Title,
-		Year:       input.Year,
-		RuntimeMin: input.RuntimeMin,
-		Genres:     input.Genres,
-	}
-
-	movie, err := s.db.UpdateMovie(ctx, params)
+func (s *MovieService) UpdateMovie(ctx context.Context, id int64, updates UpdateMovieRequest) (*Movie, error) {
+	movie, err := s.db.GetMovie(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrMovieNotFound
@@ -86,5 +72,25 @@ func (s *MovieService) UpdateMovie(ctx context.Context, id int64, input MovieInp
 		return nil, err
 	}
 
-	return transform(&movie), nil
+	fullUpdate := mergeMovieUpdates(&movie, &updates)
+	if err := fullUpdate.OK(); err != nil {
+		return nil, err
+	}
+
+	updated, err := s.db.UpdateMovie(ctx, model.UpdateMovieParams{
+		ID:         id,
+		Title:      fullUpdate.Title,
+		Year:       fullUpdate.Year,
+		RuntimeMin: fullUpdate.RuntimeMin,
+		Genres:     fullUpdate.Genres,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrMovieNotFound
+		}
+
+		return nil, err
+	}
+
+	return transform(&updated), nil
 }

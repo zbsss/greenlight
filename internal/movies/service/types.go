@@ -22,14 +22,29 @@ type Movie struct {
 	Version int32    `json:"version"`
 }
 
-type MovieInput struct {
+type CreateMovieRequest struct {
 	Title      string   `json:"title"`
 	Year       int32    `json:"year"`
 	RuntimeMin int32    `json:"runtimeMin"`
 	Genres     []string `json:"genres"`
 }
 
-func (m *MovieInput) OK() error {
+type UpdateMovieRequest struct {
+	Title      *string  `json:"title"`
+	Year       *int32   `json:"year"`
+	RuntimeMin *int32   `json:"runtimeMin"`
+	Genres     []string `json:"genres"`
+}
+
+// movieInput represents user defined movie data
+type movieInput struct {
+	Title      string
+	Year       int32
+	RuntimeMin int32
+	Genres     []string
+}
+
+func (m movieInput) OK() error {
 	v := validator.New()
 
 	v.Check(m.Title != "", "title", "must be provided")
@@ -48,6 +63,33 @@ func (m *MovieInput) OK() error {
 	v.Check(validator.Unique(m.Genres), "genres", "must not contain duplicate values")
 
 	return v.OK()
+}
+
+func mergeMovieUpdates(existing *model.Movie, updates *UpdateMovieRequest) movieInput {
+	result := movieInput{
+		Title:      existing.Title,
+		Year:       existing.Year,
+		RuntimeMin: existing.RuntimeMin,
+		Genres:     existing.Genres,
+	}
+
+	if updates.Title != nil {
+		result.Title = *updates.Title
+	}
+
+	if updates.Year != nil {
+		result.Year = *updates.Year
+	}
+
+	if updates.RuntimeMin != nil {
+		result.RuntimeMin = *updates.RuntimeMin
+	}
+
+	if updates.Genres != nil {
+		result.Genres = updates.Genres
+	}
+
+	return result
 }
 
 func transform(movie *model.Movie) *Movie {
