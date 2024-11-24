@@ -47,7 +47,7 @@ func TestGetMovie(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			mockDB.Reset()
+			mockDB.Reset(mocks.TestMovie1)
 			if tc.injectDBError != nil {
 				mockDB.FailOnNextCall(tc.injectDBError)
 			}

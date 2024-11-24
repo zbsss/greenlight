@@ -19,7 +19,7 @@ func BindMoviesAPI(ms *movies.MovieService, router *httprouter.Router) {
 	router.HandlerFunc("POST", "/v1/movies", api.create)
 	router.HandlerFunc("GET", "/v1/movies", api.list)
 	router.HandlerFunc("GET", "/v1/movies/:id", api.view)
-	router.HandlerFunc("PUT", "/v1/movies/:id", api.update)
+	router.HandlerFunc("PATCH", "/v1/movies/:id", api.update)
 }
 
 type moviesAPI struct {
@@ -27,7 +27,7 @@ type moviesAPI struct {
 }
 
 func (api *moviesAPI) create(w http.ResponseWriter, r *http.Request) {
-	var input movies.MovieInput
+	var input movies.CreateMovieRequest
 	err := body.ReadJSON(w, r, &input)
 	if err != nil {
 		errs.BadRequest(w, r, err)
@@ -104,7 +104,7 @@ func (api *moviesAPI) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var input movies.MovieInput
+	var input movies.UpdateMovieRequest
 	err = body.ReadJSON(w, r, &input)
 	if err != nil {
 		errs.BadRequest(w, r, err)

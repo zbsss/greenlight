@@ -9,6 +9,20 @@ import (
 	"github.com/zbsss/greenlight/internal/movies/model"
 )
 
+var TestMovie1 = model.Movie{
+	ID: 1,
+	CreatedAt: pgtype.Timestamptz{
+		Time: time.Now(),
+	},
+	Title:      "Django",
+	Year:       2017,
+	RuntimeMin: 120,
+	Genres: []string{
+		"action",
+	},
+	Version: 1,
+}
+
 type MockQueries struct {
 	movies     map[int64]model.Movie
 	failOnNext error
@@ -22,22 +36,12 @@ func NewMockQueries() *MockQueries {
 	return mq
 }
 
-func (mq *MockQueries) Reset() {
+func (mq *MockQueries) Reset(existing ...model.Movie) {
 	mq.failOnNext = nil
-	mq.movies = map[int64]model.Movie{
-		1: {
-			ID: 1,
-			CreatedAt: pgtype.Timestamptz{
-				Time: time.Now(),
-			},
-			Title:      "Django",
-			Year:       2017,
-			RuntimeMin: 120,
-			Genres: []string{
-				"action",
-			},
-			Version: 1,
-		},
+	mq.movies = map[int64]model.Movie{}
+
+	for _, movie := range existing {
+		mq.movies[movie.ID] = movie
 	}
 }
 
