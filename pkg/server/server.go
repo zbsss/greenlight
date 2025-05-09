@@ -10,9 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
-	"github.com/zbsss/greenlight/pkg/errs"
 	"github.com/zbsss/greenlight/pkg/rlog"
 )
 
@@ -29,22 +27,18 @@ type Server struct {
 	log *slog.Logger
 }
 
-func New(cfg Config, router *httprouter.Router, log *slog.Logger) *Server {
-	router.MethodNotAllowed = http.HandlerFunc(errs.MethodNotAllowed)
-	router.NotFound = http.HandlerFunc(errs.NotFound)
-	router.HandlerFunc("GET", "/info/health", healthcheck)
-
+func New(cfg Config, handler http.Handler, log *slog.Logger) *Server {
 	// common middleware for all APIs
-	handler := alice.New(
+	h := alice.New(
 		RecoverPanic,
 		rlog.RequestTracingMiddleware(log),
 		LogResponseCode,
 		SecureHeaders,
-	).Then(router)
+	).Then(handler)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Port),
-		Handler:      handler,
+		Handler:      h,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,

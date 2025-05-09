@@ -12,6 +12,7 @@ import (
 	"github.com/zbsss/greenlight/internal/movies/api"
 	"github.com/zbsss/greenlight/internal/movies/model"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
+	"github.com/zbsss/greenlight/pkg/server"
 )
 
 const (
@@ -25,12 +26,6 @@ type config struct {
 	db   struct {
 		dsn string
 	}
-}
-
-type application struct {
-	config config
-	log    *slog.Logger
-	movies *movies.MovieService
 }
 
 func mainNoExit() error {
@@ -53,28 +48,15 @@ func mainNoExit() error {
 	db := model.New(conn)
 	ms := movies.NewMovieService(db)
 
-	// app := &application{
-	// 	config: cfg,
-	// 	log:    logger,
-	// 	movies: movies.NewMovieService(db),
-	// }
-
 	router := http.NewServeMux()
 	moviesServer := api.NewServer(ms)
 
 	h := api.HandlerFromMux(moviesServer, router)
 
-	srv := &http.Server{
-		Handler: h,
-		Addr:    "0.0.0.0:8080",
-	}
-
-	// srv := server.New(server.Config{Port: cfg.port}, router, logger)
+	srv := server.New(server.Config{Port: cfg.port}, h, logger)
 
 	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
-	return srv.ListenAndServe()
-	// return srv.ListenAndShutdownGracefully(ctx)
-	// return nil
+	return srv.ListenAndShutdownGracefully(ctx)
 }
 
 func main() {
