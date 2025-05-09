@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
 	"github.com/zbsss/greenlight/pkg/body"
 	"github.com/zbsss/greenlight/pkg/errs"
@@ -13,28 +12,44 @@ import (
 	"github.com/zbsss/greenlight/pkg/validator"
 )
 
-func BindMoviesAPI(ms *movies.MovieService, router *httprouter.Router) {
-	api := moviesAPI{ms: ms}
-
-	router.HandlerFunc("POST", "/v1/movies", api.create)
-	router.HandlerFunc("GET", "/v1/movies", api.list)
-	router.HandlerFunc("GET", "/v1/movies/:id", api.view)
-	router.HandlerFunc("PATCH", "/v1/movies/:id", api.update)
-}
-
-type moviesAPI struct {
+type Server struct {
 	ms *movies.MovieService
 }
 
-func (api *moviesAPI) create(w http.ResponseWriter, r *http.Request) {
-	var input movies.CreateMovieRequest
-	err := body.ReadJSON(w, r, &input)
+func NewServer(ms *movies.MovieService) Server {
+	return Server{ms: ms}
+}
+
+func (s Server) GetV1Movies(w http.ResponseWriter, r *http.Request) {
+	mvs, err := s.ms.ListMovies(r.Context())
+	if err != nil {
+		errs.ServerError(w, r, err)
+		return
+	}
+
+	err = body.WriteJSON(w, http.StatusOK, body.Envelope{"movies": mvs}, nil)
+	if err != nil {
+		errs.ServerError(w, r, err)
+		return
+	}
+}
+
+func (s Server) PostV1Movies(w http.ResponseWriter, r *http.Request) {
+	var apiInput CreateMovieRequest
+	err := body.ReadJSON(w, r, &apiInput)
 	if err != nil {
 		errs.BadRequest(w, r, err)
 		return
 	}
 
-	movie, err := api.ms.CreateMovie(r.Context(), input)
+	serviceInput := movies.CreateMovieRequest{
+		Title:      apiInput.Title,
+		Year:       apiInput.Year,
+		RuntimeMin: apiInput.RuntimeMin,
+		Genres:     apiInput.Genres,
+	}
+
+	movie, err := s.ms.CreateMovie(r.Context(), serviceInput)
 	if err != nil {
 		var validationErr validator.ValidationError
 		if errors.As(err, &validationErr) {
@@ -58,28 +73,8 @@ func (api *moviesAPI) create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (api *moviesAPI) list(w http.ResponseWriter, r *http.Request) {
-	mvs, err := api.ms.ListMovies(r.Context())
-	if err != nil {
-		errs.ServerError(w, r, err)
-		return
-	}
-
-	err = body.WriteJSON(w, http.StatusOK, body.Envelope{"movies": mvs}, nil)
-	if err != nil {
-		errs.ServerError(w, r, err)
-		return
-	}
-}
-
-func (api *moviesAPI) view(w http.ResponseWriter, r *http.Request) {
-	id, err := readIDParam(r)
-	if err != nil {
-		errs.NotFound(w, r)
-		return
-	}
-
-	movie, err := api.ms.GetMovie(r.Context(), id)
+func (s Server) GetV1MoviesId(w http.ResponseWriter, r *http.Request, id int64) {
+	movie, err := s.ms.GetMovie(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, movies.ErrMovieNotFound) {
 			errs.NotFound(w, r)
@@ -97,21 +92,22 @@ func (api *moviesAPI) view(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (api *moviesAPI) update(w http.ResponseWriter, r *http.Request) {
-	id, err := readIDParam(r)
-	if err != nil {
-		errs.NotFound(w, r)
-		return
-	}
-
-	var input movies.UpdateMovieRequest
-	err = body.ReadJSON(w, r, &input)
+func (s Server) PatchV1MoviesId(w http.ResponseWriter, r *http.Request, id int64) {
+	var apiInput UpdateMovieRequest
+	err := body.ReadJSON(w, r, &apiInput)
 	if err != nil {
 		errs.BadRequest(w, r, err)
 		return
 	}
 
-	movie, err := api.ms.UpdateMovie(r.Context(), id, input)
+	serviceInput := movies.UpdateMovieRequest{
+		Title:      apiInput.Title,
+		Year:       apiInput.Year,
+		RuntimeMin: apiInput.RuntimeMin,
+		Genres:     *apiInput.Genres,
+	}
+
+	movie, err := s.ms.UpdateMovie(r.Context(), id, serviceInput)
 	if err != nil {
 		var validationErr validator.ValidationError
 		if errors.As(err, &validationErr) {

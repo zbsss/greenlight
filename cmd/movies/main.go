@@ -5,10 +5,10 @@ import (
 	"flag"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/julienschmidt/httprouter"
 	"github.com/zbsss/greenlight/internal/movies/api"
 	"github.com/zbsss/greenlight/internal/movies/model"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
@@ -26,12 +26,6 @@ type config struct {
 	db   struct {
 		dsn string
 	}
-}
-
-type application struct {
-	config config
-	log    *slog.Logger
-	movies *movies.MovieService
 }
 
 func mainNoExit() error {
@@ -52,18 +46,14 @@ func mainNoExit() error {
 	defer conn.Close(ctx)
 
 	db := model.New(conn)
+	ms := movies.NewMovieService(db)
 
-	app := &application{
-		config: cfg,
-		log:    logger,
-		movies: movies.NewMovieService(db),
-	}
+	router := http.NewServeMux()
+	moviesServer := api.NewServer(ms)
 
-	router := httprouter.New()
-	bindHealthAPI(app, router)
-	api.BindMoviesAPI(app.movies, router)
+	h := api.HandlerFromMux(moviesServer, router)
 
-	srv := server.New(server.Config{Port: cfg.port}, router, logger)
+	srv := server.New(server.Config{Port: cfg.port}, h, logger)
 
 	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
 	return srv.ListenAndShutdownGracefully(ctx)
