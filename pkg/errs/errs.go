@@ -14,6 +14,7 @@ func logError(r *http.Request, err error) {
 
 func errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
 	env := body.Envelope{"error": message}
+	rlog.FromContext(r.Context()).Error("error response", "status", status, "message", message)
 
 	err := body.WriteJSON(w, status, env, nil)
 	if err != nil {

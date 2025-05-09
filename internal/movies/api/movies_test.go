@@ -5,20 +5,19 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/zbsss/greenlight/internal/movies/model/mocks"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
 	"github.com/zbsss/greenlight/pkg/server/testserver"
 )
 
 func TestGetMovie(t *testing.T) {
-	mockDB := mocks.NewMockQueries()
-	ms := movies.NewMovieService(mockDB)
-	router := httprouter.New()
+	db := mocks.NewMockQueries()
+	ms := movies.NewMovieService(db)
+	router := http.NewServeMux()
+	movieServer := NewServer(ms)
+	h := HandlerFromMux(movieServer, router)
 
-	BindMoviesAPI(ms, router)
-
-	ts := testserver.New(router)
+	ts := testserver.New(h)
 	defer ts.Close()
 
 	tcs := []struct {
@@ -47,9 +46,9 @@ func TestGetMovie(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			mockDB.Reset(mocks.TestMovie1)
+			db.Reset(mocks.TestMovie1)
 			if tc.injectDBError != nil {
-				mockDB.FailOnNextCall(tc.injectDBError)
+				db.FailOnNextCall(tc.injectDBError)
 			}
 
 			url := fmt.Sprintf("/v1/movies/%d", tc.id)
