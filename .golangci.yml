@@ -1,4 +1,6 @@
 linters-settings:
+  exclude:
+    - \.gen.go$ # general generated files
   depguard:
     # new configuration
     rules:
