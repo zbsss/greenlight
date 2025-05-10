@@ -51,14 +51,15 @@ func RequestTracingMiddleware(log *slog.Logger) func(http.Handler) http.Handler 
 			w.Header().Set(traceIDHeader, traceID)
 			ctx := context.WithValue(r.Context(), traceIDKey, traceID)
 
-			log = log.With(
+			// Create a fresh logger with request details
+			requestLog := log.With(
 				"traceID", traceID,
 				"ip", r.RemoteAddr,
 				"proto", r.Proto,
 				"method", r.Method,
 				"uri", r.URL.RequestURI(),
 			)
-			ctx = context.WithValue(ctx, requestLoggerKey, log)
+			ctx = context.WithValue(ctx, requestLoggerKey, requestLog)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
