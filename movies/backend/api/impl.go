@@ -27,7 +27,7 @@ func (s Server) GetV1Movies(w http.ResponseWriter, r *http.Request) {
 
 	apiMovies := make([]Movie, len(mvs))
 	for i, m := range mvs {
-		apiMovies[i] = *toAPIMovie(m)
+		apiMovies[i] = toAPIMovie(m)
 	}
 
 	if err := srvx.WriteJSON(w, http.StatusOK, srvx.Envelope{"movies": apiMovies}, nil); err != nil {

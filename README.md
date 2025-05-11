@@ -1,7 +1,7 @@
 ## Prerequisites
 
 ```
-brew install sqlc golang-migrate
+brew install sqlc golang-migrate golangci-lint
 
 go install github.com/air-verse/air@latest github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 ```
@@ -39,4 +39,10 @@ oapi-codegen -generate types,std-http-server -package api -o movies/backend/api/
 ```sh
 cd movies/frontend
 npx openapi-typescript ../api/movies.yaml -o src/lib/api/v1.d.ts
+```
+
+## Docker
+
+```sh
+docker build -t greenlight -f movies/backend/Dockerfile .
 ```

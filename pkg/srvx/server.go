@@ -65,5 +65,5 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, shutdownTimeout)
 	defer cancel()
 
-	return s.Server.Shutdown(ctx)
+	return s.Shutdown(ctx)
 }

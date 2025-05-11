@@ -39,17 +39,13 @@ func mainNoExit() error {
 	if err != nil {
 		return err
 	}
-
 	defer conn.Close(ctx)
 
-	storage := storage.New(conn)
-	ms := service.New(storage)
-
-	router := http.NewServeMux()
+	ms := service.New(storage.New(conn))
 	moviesServer := api.NewServer(ms)
 
+	router := http.NewServeMux()
 	h := api.HandlerFromMux(moviesServer, router)
-
 	srv := srvx.NewServer(srvx.Config{Port: cfg.port}, h, logger)
 
 	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)

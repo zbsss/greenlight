@@ -9,5 +9,5 @@ export default async function Home() {
 
   if (!data.movies) return "No movies found";
 
-  return <div>{data.movies.map((movie) => movie.title).join(", ")}</div>;
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
 }

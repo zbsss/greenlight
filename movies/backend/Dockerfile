@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /movies-server ./cmd/movies
+RUN go build -o /movies-server ./movies/backend
 
 FROM alpine:latest
 

@@ -16,8 +16,8 @@ type MovieService struct {
 	storage storage.Querier
 }
 
-func New(storage storage.Querier) *MovieService {
-	return &MovieService{storage: storage}
+func New(s storage.Querier) *MovieService {
+	return &MovieService{storage: s}
 }
 
 func (s *MovieService) CreateMovie(ctx context.Context, input MovieInput) (*Movie, error) {

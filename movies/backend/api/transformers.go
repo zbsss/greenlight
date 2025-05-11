@@ -7,12 +7,8 @@ import (
 )
 
 // toAPIMovie converts a service Movie to an API Movie
-func toAPIMovie(serviceMovie *service.Movie) *Movie {
-	if serviceMovie == nil {
-		return nil
-	}
-
-	return &Movie{
+func toAPIMovie(serviceMovie *service.Movie) Movie {
+	return Movie{
 		Id:      serviceMovie.ID,
 		Title:   serviceMovie.Title,
 		Year:    serviceMovie.Year,
