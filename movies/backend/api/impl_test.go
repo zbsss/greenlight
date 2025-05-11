@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/zbsss/greenlight/movies/backend/model/mocks"
 	"github.com/zbsss/greenlight/movies/backend/service"
+	"github.com/zbsss/greenlight/movies/backend/storage/mocks"
 	"github.com/zbsss/greenlight/pkg/srvx/testserver"
 )
 

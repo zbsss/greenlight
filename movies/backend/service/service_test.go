@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/zbsss/greenlight/movies/backend/model"
-	"github.com/zbsss/greenlight/movies/backend/model/mocks"
+	"github.com/zbsss/greenlight/movies/backend/storage"
+	"github.com/zbsss/greenlight/movies/backend/storage/mocks"
 	"github.com/zbsss/greenlight/pkg/validator"
 	"k8s.io/utils/ptr"
 )
@@ -113,7 +113,7 @@ func TestCreateMovie(t *testing.T) {
 func TestUpdateMovie(t *testing.T) {
 	h := setupTest(t)
 
-	existingMovie := model.Movie{
+	existingMovie := storage.Movie{
 		ID:         1,
 		Version:    1,
 		Title:      "Django",

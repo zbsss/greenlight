@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/zbsss/greenlight/movies/backend/model"
+	"github.com/zbsss/greenlight/movies/backend/storage"
 )
 
-var TestMovie1 = model.Movie{
+var TestMovie1 = storage.Movie{
 	ID: 1,
 	CreatedAt: pgtype.Timestamptz{
 		Time: time.Now(),
@@ -24,11 +24,11 @@ var TestMovie1 = model.Movie{
 }
 
 type MockQueries struct {
-	movies     map[int64]model.Movie
+	movies     map[int64]storage.Movie
 	failOnNext error
 }
 
-var _ model.Querier = &MockQueries{}
+var _ storage.Querier = &MockQueries{}
 
 func NewMockQueries() *MockQueries {
 	mq := &MockQueries{}
@@ -36,9 +36,9 @@ func NewMockQueries() *MockQueries {
 	return mq
 }
 
-func (mq *MockQueries) Reset(existing ...model.Movie) {
+func (mq *MockQueries) Reset(existing ...storage.Movie) {
 	mq.failOnNext = nil
-	mq.movies = map[int64]model.Movie{}
+	mq.movies = map[int64]storage.Movie{}
 
 	for _, movie := range existing {
 		mq.movies[movie.ID] = movie
@@ -59,12 +59,12 @@ func (mq *MockQueries) checkForFailure() error {
 	return nil
 }
 
-func (mq *MockQueries) CreateMovie(_ context.Context, arg model.CreateMovieParams) (model.Movie, error) {
+func (mq *MockQueries) CreateMovie(_ context.Context, arg storage.CreateMovieParams) (storage.Movie, error) {
 	if err := mq.checkForFailure(); err != nil {
-		return model.Movie{}, err
+		return storage.Movie{}, err
 	}
 
-	movie := model.Movie{
+	movie := storage.Movie{
 		ID:      int64(len(mq.movies)) + 1,
 		Version: 1,
 		CreatedAt: pgtype.Timestamptz{
@@ -81,26 +81,26 @@ func (mq *MockQueries) CreateMovie(_ context.Context, arg model.CreateMovieParam
 	return movie, nil
 }
 
-func (mq *MockQueries) GetMovie(_ context.Context, id int64) (model.Movie, error) {
+func (mq *MockQueries) GetMovie(_ context.Context, id int64) (storage.Movie, error) {
 	if err := mq.checkForFailure(); err != nil {
-		return model.Movie{}, err
+		return storage.Movie{}, err
 	}
 
 	movie, ok := mq.movies[id]
 
 	if !ok {
-		return model.Movie{}, sql.ErrNoRows
+		return storage.Movie{}, sql.ErrNoRows
 	}
 
 	return movie, nil
 }
 
-func (mq *MockQueries) ListMovies(_ context.Context) ([]model.Movie, error) {
+func (mq *MockQueries) ListMovies(_ context.Context) ([]storage.Movie, error) {
 	if err := mq.checkForFailure(); err != nil {
 		return nil, err
 	}
 
-	movies := make([]model.Movie, len(mq.movies))
+	movies := make([]storage.Movie, len(mq.movies))
 	i := 0
 	for _, movie := range mq.movies {
 		movies[i] = movie
@@ -110,18 +110,18 @@ func (mq *MockQueries) ListMovies(_ context.Context) ([]model.Movie, error) {
 	return movies, nil
 }
 
-func (mq *MockQueries) UpdateMovie(_ context.Context, arg model.UpdateMovieParams) (model.Movie, error) {
+func (mq *MockQueries) UpdateMovie(_ context.Context, arg storage.UpdateMovieParams) (storage.Movie, error) {
 	if err := mq.checkForFailure(); err != nil {
-		return model.Movie{}, err
+		return storage.Movie{}, err
 	}
 
 	oldMovie, ok := mq.movies[arg.ID]
 
 	if !ok {
-		return model.Movie{}, sql.ErrNoRows
+		return storage.Movie{}, sql.ErrNoRows
 	}
 
-	newMovie := model.Movie{
+	newMovie := storage.Movie{
 		ID:         arg.ID,
 		Version:    oldMovie.Version + 1,
 		CreatedAt:  oldMovie.CreatedAt,

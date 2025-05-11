@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/zbsss/greenlight/movies/backend/model"
+	"github.com/zbsss/greenlight/movies/backend/storage"
 )
 
 var (
@@ -13,11 +13,11 @@ var (
 )
 
 type MovieService struct {
-	db model.Querier
+	storage storage.Querier
 }
 
-func New(db model.Querier) *MovieService {
-	return &MovieService{db: db}
+func New(storage storage.Querier) *MovieService {
+	return &MovieService{storage: storage}
 }
 
 func (s *MovieService) CreateMovie(ctx context.Context, input MovieInput) (*Movie, error) {
@@ -26,7 +26,7 @@ func (s *MovieService) CreateMovie(ctx context.Context, input MovieInput) (*Movi
 		return nil, err
 	}
 
-	movie, err := s.db.CreateMovie(ctx, model.CreateMovieParams{
+	movie, err := s.storage.CreateMovie(ctx, storage.CreateMovieParams{
 		Title:      input.Title,
 		Year:       input.Year,
 		RuntimeMin: input.RuntimeMin,
@@ -41,7 +41,7 @@ func (s *MovieService) CreateMovie(ctx context.Context, input MovieInput) (*Movi
 }
 
 func (s *MovieService) ListMovies(ctx context.Context) ([]*Movie, error) {
-	movies, err := s.db.ListMovies(ctx)
+	movies, err := s.storage.ListMovies(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (s *MovieService) ListMovies(ctx context.Context) ([]*Movie, error) {
 }
 
 func (s *MovieService) GetMovie(ctx context.Context, id int64) (*Movie, error) {
-	movie, err := s.db.GetMovie(ctx, id)
+	movie, err := s.storage.GetMovie(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrMovieNotFound
@@ -67,7 +67,7 @@ func (s *MovieService) GetMovie(ctx context.Context, id int64) (*Movie, error) {
 }
 
 func (s *MovieService) UpdateMovie(ctx context.Context, id int64, updates PartialMovieUpdate) (*Movie, error) {
-	movie, err := s.db.GetMovie(ctx, id)
+	movie, err := s.storage.GetMovie(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrMovieNotFound
@@ -81,7 +81,7 @@ func (s *MovieService) UpdateMovie(ctx context.Context, id int64, updates Partia
 		return nil, err
 	}
 
-	updated, err := s.db.UpdateMovie(ctx, model.UpdateMovieParams{
+	updated, err := s.storage.UpdateMovie(ctx, storage.UpdateMovieParams{
 		ID:         id,
 		Title:      fullUpdate.Title,
 		Year:       fullUpdate.Year,

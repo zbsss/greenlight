@@ -3,7 +3,7 @@ package service
 import (
 	"time"
 
-	"github.com/zbsss/greenlight/movies/backend/model"
+	"github.com/zbsss/greenlight/movies/backend/storage"
 	"github.com/zbsss/greenlight/pkg/validator"
 )
 
@@ -57,7 +57,7 @@ func (m MovieInput) OK() error {
 	return v.OK()
 }
 
-func mergeMovieUpdates(existing *model.Movie, updates *PartialMovieUpdate) MovieInput {
+func mergeMovieUpdates(existing *storage.Movie, updates *PartialMovieUpdate) MovieInput {
 	result := MovieInput{
 		Title:      existing.Title,
 		Year:       existing.Year,
@@ -84,7 +84,7 @@ func mergeMovieUpdates(existing *model.Movie, updates *PartialMovieUpdate) Movie
 	return result
 }
 
-func transform(movie *model.Movie) *Movie {
+func transform(movie *storage.Movie) *Movie {
 	return &Movie{
 		ID:         movie.ID,
 		Title:      movie.Title,

@@ -5,8 +5,8 @@ sql:
     schema: "migrations"
     gen:
       go:
-        package: "model"
-        out: "model"
+        package: "storage"
+        out: "."
         sql_package: "pgx/v5"
         emit_json_tags: true
         json_tags_case_style: camel
