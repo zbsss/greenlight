@@ -57,24 +57,24 @@ func (h testHelpers) assertMovie(expected, actual *Movie) {
 func TestCreateMovie(t *testing.T) {
 	h := setupTest(t)
 
-	validCreateMovie := CreateMovieRequest{
+	validCreateMovie := MovieInput{
 		Title:      "Casablanca",
 		Year:       1942,
 		RuntimeMin: 102,
 		Genres:     []string{"drama", "romance", "war"},
 	}
 	expectedMovie := &Movie{
-		ID:      1,
-		Version: 1,
-		Title:   "Casablanca",
-		Year:    1942,
-		Runtime: Runtime(102),
-		Genres:  []string{"drama", "romance", "war"},
+		ID:         1,
+		Version:    1,
+		Title:      "Casablanca",
+		Year:       1942,
+		RuntimeMin: 102,
+		Genres:     []string{"drama", "romance", "war"},
 	}
 
 	tcs := []struct {
 		name          string
-		input         CreateMovieRequest
+		input         MovieInput
 		injectDBError error
 		expectedMovie *Movie
 		expectedError error
@@ -86,7 +86,7 @@ func TestCreateMovie(t *testing.T) {
 		},
 		{
 			name:          "empty input",
-			input:         CreateMovieRequest{},
+			input:         MovieInput{},
 			expectedError: validator.ValidationError{},
 		},
 		{
@@ -124,12 +124,12 @@ func TestUpdateMovie(t *testing.T) {
 
 	// Base expected movie that represents the movie with just the version incremented
 	baseExpected := &Movie{
-		ID:      1,
-		Version: 2,
-		Title:   "Django",
-		Year:    2017,
-		Runtime: Runtime(120),
-		Genres:  []string{"action"},
+		ID:         1,
+		Version:    2,
+		Title:      "Django",
+		Year:       2017,
+		RuntimeMin: 120,
+		Genres:     []string{"action"},
 	}
 
 	// Helper function to clone and modify the base expected movie
@@ -144,7 +144,7 @@ func TestUpdateMovie(t *testing.T) {
 	tcs := []struct {
 		name          string
 		id            int64
-		input         UpdateMovieRequest
+		input         PartialMovieUpdate
 		injectDBError error
 		expectedMovie *Movie
 		expectedError error
@@ -152,7 +152,7 @@ func TestUpdateMovie(t *testing.T) {
 		{
 			name: "update title",
 			id:   1,
-			input: UpdateMovieRequest{
+			input: PartialMovieUpdate{
 				Title: ptr.To("Django Unchained"),
 			},
 			expectedMovie: cloneWithOverrides(func(m *Movie) {
@@ -162,7 +162,7 @@ func TestUpdateMovie(t *testing.T) {
 		{
 			name: "update year",
 			id:   1,
-			input: UpdateMovieRequest{
+			input: PartialMovieUpdate{
 				Year: ptr.To[int32](2018),
 			},
 			expectedMovie: cloneWithOverrides(func(m *Movie) {
@@ -172,17 +172,17 @@ func TestUpdateMovie(t *testing.T) {
 		{
 			name: "update runtime",
 			id:   1,
-			input: UpdateMovieRequest{
+			input: PartialMovieUpdate{
 				RuntimeMin: ptr.To[int32](121),
 			},
 			expectedMovie: cloneWithOverrides(func(m *Movie) {
-				m.Runtime = Runtime(121)
+				m.RuntimeMin = 121
 			}),
 		},
 		{
 			name: "update genres",
 			id:   1,
-			input: UpdateMovieRequest{
+			input: PartialMovieUpdate{
 				Genres: []string{"comedy"},
 			},
 			expectedMovie: cloneWithOverrides(func(m *Movie) {
@@ -192,18 +192,18 @@ func TestUpdateMovie(t *testing.T) {
 		{
 			name:          "empty update",
 			id:            1,
-			input:         UpdateMovieRequest{},
+			input:         PartialMovieUpdate{},
 			expectedMovie: cloneWithOverrides(nil), // Use base expected without modifications
 		},
 		{
 			name:          "not found",
 			id:            2,
-			input:         UpdateMovieRequest{},
+			input:         PartialMovieUpdate{},
 			expectedError: ErrMovieNotFound,
 		},
 		{
 			name:          "db error",
-			input:         UpdateMovieRequest{},
+			input:         PartialMovieUpdate{},
 			injectDBError: errInjectedDBError,
 			expectedError: errInjectedDBError,
 		},

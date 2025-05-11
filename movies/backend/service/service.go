@@ -20,9 +20,9 @@ func New(db model.Querier) *MovieService {
 	return &MovieService{db: db}
 }
 
-func (s *MovieService) CreateMovie(ctx context.Context, input CreateMovieRequest) (*Movie, error) {
+func (s *MovieService) CreateMovie(ctx context.Context, input MovieInput) (*Movie, error) {
 	// Validate the input
-	if err := movieInput(input).OK(); err != nil {
+	if err := input.OK(); err != nil {
 		return nil, err
 	}
 
@@ -66,7 +66,7 @@ func (s *MovieService) GetMovie(ctx context.Context, id int64) (*Movie, error) {
 	return transform(&movie), nil
 }
 
-func (s *MovieService) UpdateMovie(ctx context.Context, id int64, updates UpdateMovieRequest) (*Movie, error) {
+func (s *MovieService) UpdateMovie(ctx context.Context, id int64, updates PartialMovieUpdate) (*Movie, error) {
 	movie, err := s.db.GetMovie(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/zbsss/greenlight/movies/backend/model"
@@ -15,46 +13,30 @@ const (
 	genresMaxCount = 5
 )
 
-type Runtime int32
-
-func (r Runtime) MarshalJSON() ([]byte, error) {
-	jsonValue := fmt.Sprintf("%d min", r)
-	quotedJSONValue := strconv.Quote(jsonValue)
-	return []byte(quotedJSONValue), nil
-}
-
 type Movie struct {
-	ID      int64    `json:"id"`
-	Title   string   `json:"title"`
-	Year    int32    `json:"year"`
-	Runtime Runtime  `json:"runtime,omitempty"`
-	Genres  []string `json:"genres"`
-	Version int32    `json:"version"`
+	ID         int64
+	Title      string
+	Year       int32
+	RuntimeMin int32
+	Genres     []string
+	Version    int32
 }
 
-type CreateMovieRequest struct {
-	Title      string   `json:"title"`
-	Year       int32    `json:"year"`
-	RuntimeMin int32    `json:"runtimeMin"`
-	Genres     []string `json:"genres"`
-}
-
-type UpdateMovieRequest struct {
-	Title      *string  `json:"title"`
-	Year       *int32   `json:"year"`
-	RuntimeMin *int32   `json:"runtimeMin"`
-	Genres     []string `json:"genres"`
-}
-
-// movieInput represents user defined movie data
-type movieInput struct {
+type MovieInput struct {
 	Title      string
 	Year       int32
 	RuntimeMin int32
 	Genres     []string
 }
 
-func (m movieInput) OK() error {
+type PartialMovieUpdate struct {
+	Title      *string
+	Year       *int32
+	RuntimeMin *int32
+	Genres     []string
+}
+
+func (m MovieInput) OK() error {
 	v := validator.New()
 
 	v.Check(m.Title != "", "title", "must be provided")
@@ -75,8 +57,8 @@ func (m movieInput) OK() error {
 	return v.OK()
 }
 
-func mergeMovieUpdates(existing *model.Movie, updates *UpdateMovieRequest) movieInput {
-	result := movieInput{
+func mergeMovieUpdates(existing *model.Movie, updates *PartialMovieUpdate) MovieInput {
+	result := MovieInput{
 		Title:      existing.Title,
 		Year:       existing.Year,
 		RuntimeMin: existing.RuntimeMin,
@@ -104,11 +86,11 @@ func mergeMovieUpdates(existing *model.Movie, updates *UpdateMovieRequest) movie
 
 func transform(movie *model.Movie) *Movie {
 	return &Movie{
-		ID:      movie.ID,
-		Title:   movie.Title,
-		Year:    movie.Year,
-		Runtime: Runtime(movie.RuntimeMin),
-		Genres:  movie.Genres,
-		Version: movie.Version,
+		ID:         movie.ID,
+		Title:      movie.Title,
+		Year:       movie.Year,
+		RuntimeMin: movie.RuntimeMin,
+		Genres:     movie.Genres,
+		Version:    movie.Version,
 	}
 }

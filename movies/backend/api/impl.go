@@ -25,7 +25,12 @@ func (s Server) GetV1Movies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := srvx.WriteJSON(w, http.StatusOK, srvx.Envelope{"movies": mvs}, nil); err != nil {
+	apiMovies := make([]Movie, len(mvs))
+	for i, m := range mvs {
+		apiMovies[i] = *toAPIMovie(m)
+	}
+
+	if err := srvx.WriteJSON(w, http.StatusOK, srvx.Envelope{"movies": apiMovies}, nil); err != nil {
 		srvx.ErrServer(w, r, err)
 		return
 	}
@@ -39,14 +44,7 @@ func (s Server) PostV1Movies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceInput := service.CreateMovieRequest{
-		Title:      apiInput.Title,
-		Year:       apiInput.Year,
-		RuntimeMin: apiInput.RuntimeMin,
-		Genres:     apiInput.Genres,
-	}
-
-	movie, err := s.ms.CreateMovie(r.Context(), serviceInput)
+	movie, err := s.ms.CreateMovie(r.Context(), apiInput.toService())
 	if err != nil {
 		var validationErr validator.ValidationError
 		if errors.As(err, &validationErr) {
@@ -63,7 +61,7 @@ func (s Server) PostV1Movies(w http.ResponseWriter, r *http.Request) {
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
 
-	if err := srvx.WriteJSON(w, http.StatusCreated, srvx.Envelope{"movie": movie}, headers); err != nil {
+	if err := srvx.WriteJSON(w, http.StatusCreated, srvx.Envelope{"movie": toAPIMovie(movie)}, headers); err != nil {
 		srvx.ErrServer(w, r, err)
 		return
 	}
@@ -81,7 +79,7 @@ func (s Server) GetV1MoviesId(w http.ResponseWriter, r *http.Request, id int64) 
 		return
 	}
 
-	if err := srvx.WriteJSON(w, http.StatusOK, srvx.Envelope{"movie": movie}, nil); err != nil {
+	if err := srvx.WriteJSON(w, http.StatusOK, srvx.Envelope{"movie": toAPIMovie(movie)}, nil); err != nil {
 		srvx.ErrServer(w, r, err)
 		return
 	}
@@ -95,14 +93,7 @@ func (s Server) PatchV1MoviesId(w http.ResponseWriter, r *http.Request, id int64
 		return
 	}
 
-	serviceInput := service.UpdateMovieRequest{
-		Title:      apiInput.Title,
-		Year:       apiInput.Year,
-		RuntimeMin: apiInput.RuntimeMin,
-		Genres:     *apiInput.Genres,
-	}
-
-	movie, err := s.ms.UpdateMovie(r.Context(), id, serviceInput)
+	movie, err := s.ms.UpdateMovie(r.Context(), id, apiInput.toService())
 	if err != nil {
 		var validationErr validator.ValidationError
 		if errors.As(err, &validationErr) {

@@ -3,6 +3,8 @@ import client from "@/lib/api/client";
 export default async function Home() {
   const { data, error } = await client.GET("/v1/movies");
 
+  console.log(data, error);
+
   if (error) return `An error occurred: ${JSON.stringify(error)}`;
 
   if (!data.movies) return "No movies found";
