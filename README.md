@@ -46,3 +46,26 @@ npx openapi-typescript ../api/movies.yaml -o src/lib/api/v1.d.ts
 ```sh
 docker build -t greenlight -f movies/backend/Dockerfile .
 ```
+
+## Development
+
+### Backend
+
+```sh
+air
+```
+
+### Frontend
+
+```sh
+cd movies/frontend
+npm run dev
+```
+
+http://localhost:3000
+
+or
+
+```sh
+curl -i -X GET localhost:400/v1/movies -H "X-Trace-Id: e94e9f13-f01c-4af8-80ca-544e2ffe8ce0"
+```
