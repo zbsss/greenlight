@@ -1,4 +1,4 @@
-package server
+package srvx
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/justinas/alice"
-	"github.com/zbsss/greenlight/pkg/rlog"
 )
 
 const (
@@ -27,13 +26,13 @@ type Server struct {
 	log *slog.Logger
 }
 
-func New(cfg Config, handler http.Handler, log *slog.Logger) *Server {
+func NewServer(cfg Config, handler http.Handler, log *slog.Logger) *Server {
 	// common middleware for all APIs
 	h := alice.New(
-		RecoverPanic,
-		rlog.RequestTracingMiddleware(log),
-		LogResponseCode,
-		SecureHeaders,
+		recoverPanic,
+		traceRequest(log),
+		logResponseCode,
+		secureHeaders,
 	).Then(handler)
 
 	srv := &http.Server{
@@ -48,9 +47,9 @@ func New(cfg Config, handler http.Handler, log *slog.Logger) *Server {
 	return &Server{srv, log}
 }
 
-func (s *Server) ListenAndShutdownGracefully(ctx context.Context) error {
+func (s *Server) ListenAndServe(ctx context.Context) error {
 	go func() {
-		if err := s.ListenAndServe(); err != nil {
+		if err := s.Server.ListenAndServe(); err != nil {
 			if err == http.ErrServerClosed {
 				s.log.Info("server shut down gracefully")
 			} else {
@@ -66,5 +65,5 @@ func (s *Server) ListenAndShutdownGracefully(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, shutdownTimeout)
 	defer cancel()
 
-	return s.Shutdown(ctx)
+	return s.Server.Shutdown(ctx)
 }

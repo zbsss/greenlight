@@ -7,7 +7,7 @@ import (
 
 	"github.com/zbsss/greenlight/internal/movies/model/mocks"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
-	"github.com/zbsss/greenlight/pkg/server/testserver"
+	"github.com/zbsss/greenlight/pkg/srvx/testserver"
 )
 
 func TestGetMovie(t *testing.T) {

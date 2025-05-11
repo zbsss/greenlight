@@ -1,4 +1,4 @@
-package body
+package srvx
 
 import (
 	"bytes"

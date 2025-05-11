@@ -12,13 +12,10 @@ import (
 	"github.com/zbsss/greenlight/internal/movies/api"
 	"github.com/zbsss/greenlight/internal/movies/model"
 	movies "github.com/zbsss/greenlight/internal/movies/service"
-	"github.com/zbsss/greenlight/pkg/server"
+	"github.com/zbsss/greenlight/pkg/srvx"
 )
 
-const (
-	version     = "0.1.0"
-	defaultPort = 400
-)
+const defaultPort = 400
 
 type config struct {
 	port int
@@ -53,10 +50,10 @@ func mainNoExit() error {
 
 	h := api.HandlerFromMux(moviesServer, router)
 
-	srv := server.New(server.Config{Port: cfg.port}, h, logger)
+	srv := srvx.NewServer(srvx.Config{Port: cfg.port}, h, logger)
 
 	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
-	return srv.ListenAndShutdownGracefully(ctx)
+	return srv.ListenAndServe(ctx)
 }
 
 func main() {
