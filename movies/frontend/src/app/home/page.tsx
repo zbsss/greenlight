@@ -1,5 +1,7 @@
 import client from "@/lib/api/client";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const { data, error } = await client.GET("/v1/movies");
 
