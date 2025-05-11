@@ -36,20 +36,24 @@ type PartialMovieUpdate struct {
 	Genres     []string
 }
 
+const (
+	errMustBeProvided = "must be provided"
+)
+
 func (m MovieInput) OK() error {
 	v := validator.New()
 
-	v.Check(m.Title != "", "title", "must be provided")
+	v.Check(m.Title != "", "title", errMustBeProvided)
 	v.Check(len(m.Title) <= titleMaxLength, "title", "must not be more than 500 bytes long")
 
-	v.Check(m.Year != 0, "year", "must be provided")
+	v.Check(m.Year != 0, "year", errMustBeProvided)
 	v.Check(m.Year >= yearMin, "year", "must be greater than 1888")
 	v.Check(int(m.Year) <= time.Now().Year(), "year", "must not be in the future")
 
-	v.Check(m.RuntimeMin != 0, "runtimeMin", "must be provided")
+	v.Check(m.RuntimeMin != 0, "runtimeMin", errMustBeProvided)
 	v.Check(m.RuntimeMin > 0, "runtimeMin", "must be a positive integer")
 
-	v.Check(m.Genres != nil, "genres", "must be provided")
+	v.Check(m.Genres != nil, "genres", errMustBeProvided)
 	v.Check(len(m.Genres) >= 1, "genres", "must contain at least 1 genre")
 	v.Check(len(m.Genres) <= genresMaxCount, "genres", "must not contain more than 5 genres")
 	v.Check(validator.Unique(m.Genres), "genres", "must not contain duplicate values")

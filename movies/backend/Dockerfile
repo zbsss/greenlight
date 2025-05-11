@@ -9,7 +9,7 @@ COPY . .
 
 RUN go build -o /movies-server ./movies/backend
 
-FROM alpine:latest
+FROM alpine:3.21.3
 
 COPY --from=build /movies-server /app/movies-server
 

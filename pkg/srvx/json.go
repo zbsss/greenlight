@@ -29,7 +29,6 @@ func WriteJSON(w http.ResponseWriter, status int, data Envelope, headers http.He
 	return err
 }
 
-// TODO: add unit test
 func ReadJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	// Use http.MaxBytesReader to limit the size of the request body to 1MB.
 	const maxBytes = 1_048_576
