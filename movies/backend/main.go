@@ -9,9 +9,9 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/zbsss/greenlight/internal/movies/api"
-	"github.com/zbsss/greenlight/internal/movies/model"
-	movies "github.com/zbsss/greenlight/internal/movies/service"
+	"github.com/zbsss/greenlight/movies/backend/api"
+	"github.com/zbsss/greenlight/movies/backend/model"
+	"github.com/zbsss/greenlight/movies/backend/service"
 	"github.com/zbsss/greenlight/pkg/srvx"
 )
 
@@ -43,7 +43,7 @@ func mainNoExit() error {
 	defer conn.Close(ctx)
 
 	db := model.New(conn)
-	ms := movies.NewMovieService(db)
+	ms := service.New(db)
 
 	router := http.NewServeMux()
 	moviesServer := api.NewServer(ms)

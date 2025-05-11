@@ -1,18 +1,22 @@
-package movies
+package service
 
 import (
 	"context"
 	"database/sql"
 	"errors"
 
-	"github.com/zbsss/greenlight/internal/movies/model"
+	"github.com/zbsss/greenlight/movies/backend/model"
+)
+
+var (
+	ErrMovieNotFound = errors.New("movie not found")
 )
 
 type MovieService struct {
 	db model.Querier
 }
 
-func NewMovieService(db model.Querier) *MovieService {
+func New(db model.Querier) *MovieService {
 	return &MovieService{db: db}
 }
 

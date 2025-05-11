@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/zbsss/greenlight/internal/movies/model"
+	"github.com/zbsss/greenlight/movies/backend/model"
 )
 
 var TestMovie1 = model.Movie{

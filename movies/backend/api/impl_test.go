@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/zbsss/greenlight/internal/movies/model/mocks"
-	movies "github.com/zbsss/greenlight/internal/movies/service"
+	"github.com/zbsss/greenlight/movies/backend/model/mocks"
+	"github.com/zbsss/greenlight/movies/backend/service"
 	"github.com/zbsss/greenlight/pkg/srvx/testserver"
 )
 
 func TestGetMovie(t *testing.T) {
 	db := mocks.NewMockQueries()
-	ms := movies.NewMovieService(db)
+	ms := service.New(db)
 	router := http.NewServeMux()
 	movieServer := NewServer(ms)
 	h := HandlerFromMux(movieServer, router)

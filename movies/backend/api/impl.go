@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"net/http"
 
-	movies "github.com/zbsss/greenlight/internal/movies/service"
+	"github.com/zbsss/greenlight/movies/backend/service"
 	"github.com/zbsss/greenlight/pkg/srvx"
 	"github.com/zbsss/greenlight/pkg/validator"
 )
 
 type Server struct {
-	ms *movies.MovieService
+	ms *service.MovieService
 }
 
-func NewServer(ms *movies.MovieService) Server {
+func NewServer(ms *service.MovieService) Server {
 	return Server{ms: ms}
 }
 
@@ -39,7 +39,7 @@ func (s Server) PostV1Movies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceInput := movies.CreateMovieRequest{
+	serviceInput := service.CreateMovieRequest{
 		Title:      apiInput.Title,
 		Year:       apiInput.Year,
 		RuntimeMin: apiInput.RuntimeMin,
@@ -72,7 +72,7 @@ func (s Server) PostV1Movies(w http.ResponseWriter, r *http.Request) {
 func (s Server) GetV1MoviesId(w http.ResponseWriter, r *http.Request, id int64) {
 	movie, err := s.ms.GetMovie(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, movies.ErrMovieNotFound) {
+		if errors.Is(err, service.ErrMovieNotFound) {
 			srvx.ErrNotFound(w, r)
 			return
 		}
@@ -95,7 +95,7 @@ func (s Server) PatchV1MoviesId(w http.ResponseWriter, r *http.Request, id int64
 		return
 	}
 
-	serviceInput := movies.UpdateMovieRequest{
+	serviceInput := service.UpdateMovieRequest{
 		Title:      apiInput.Title,
 		Year:       apiInput.Year,
 		RuntimeMin: apiInput.RuntimeMin,

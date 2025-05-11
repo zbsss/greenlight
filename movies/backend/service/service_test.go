@@ -1,4 +1,4 @@
-package movies
+package service
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/zbsss/greenlight/internal/movies/model"
-	"github.com/zbsss/greenlight/internal/movies/model/mocks"
+	"github.com/zbsss/greenlight/movies/backend/model"
+	"github.com/zbsss/greenlight/movies/backend/model/mocks"
 	"github.com/zbsss/greenlight/pkg/validator"
 	"k8s.io/utils/ptr"
 )
@@ -26,7 +26,7 @@ type testHelpers struct {
 
 func setupTest(t *testing.T) testHelpers {
 	mockModel := mocks.NewMockQueries()
-	service := NewMovieService(mockModel)
+	service := New(mockModel)
 	return testHelpers{t: t, model: mockModel, service: service}
 }
 

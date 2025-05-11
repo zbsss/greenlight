@@ -1,9 +1,11 @@
-package movies
+package service
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
-	"github.com/zbsss/greenlight/internal/movies/model"
+	"github.com/zbsss/greenlight/movies/backend/model"
 	"github.com/zbsss/greenlight/pkg/validator"
 )
 
@@ -12,6 +14,14 @@ const (
 	yearMin        = 1888
 	genresMaxCount = 5
 )
+
+type Runtime int32
+
+func (r Runtime) MarshalJSON() ([]byte, error) {
+	jsonValue := fmt.Sprintf("%d min", r)
+	quotedJSONValue := strconv.Quote(jsonValue)
+	return []byte(quotedJSONValue), nil
+}
 
 type Movie struct {
 	ID      int64    `json:"id"`
