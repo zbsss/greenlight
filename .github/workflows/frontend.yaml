@@ -9,6 +9,11 @@ on:
       - "movies/frontend/**"
     branches:
       - main
+
+defaults:
+  run:
+    working-directory: movies/frontend
+
 jobs:
   test:
     name: Test
