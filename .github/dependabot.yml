@@ -18,3 +18,12 @@ updates:
     labels:
       - "dependencies"
       - "automated"
+
+  - package-ecosystem: "npm"
+    directory: "movies/frontend"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automated"
