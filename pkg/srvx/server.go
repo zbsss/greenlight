@@ -56,6 +56,7 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 				s.log.Error("server shut down unexpectedly", "error", err.Error())
 			}
 		}
+		s.log.Info("server shut down")
 	}()
 
 	quit := make(chan os.Signal, 1)

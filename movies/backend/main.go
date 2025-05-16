@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 	"github.com/zbsss/greenlight/movies/backend/api"
 	"github.com/zbsss/greenlight/movies/backend/service"
 	"github.com/zbsss/greenlight/movies/backend/storage"
+	"github.com/zbsss/greenlight/movies/backend/storage/teststorage"
+
 	"github.com/zbsss/greenlight/pkg/srvx"
 )
 
@@ -29,19 +32,24 @@ func mainNoExit() error {
 	var cfg config
 	flag.IntVar(&cfg.port, "port", defaultPort, "Port")
 	flag.StringVar(&cfg.env, "env", "dev", "Environment (dev|prod)")
-	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:password@localhost/greenlight", "PostgresSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", "", "PostgresSQL DSN")
 	flag.Parse()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, cfg.db.dsn)
+
+	movieStorage, cleanup, err := setupStorage(ctx, cfg.env, cfg.db.dsn)
 	if err != nil {
 		return err
 	}
-	defer conn.Close(ctx)
+	defer func() {
+		if err := cleanup(ctx); err != nil {
+			logger.Error("failed to clean up storage", "error", err)
+		}
+	}()
 
-	ms := service.New(storage.New(conn))
+	ms := service.New(movieStorage)
 	moviesServer := api.NewServer(ms)
 
 	router := http.NewServeMux()
@@ -50,6 +58,23 @@ func mainNoExit() error {
 
 	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
 	return srv.ListenAndServe(ctx)
+}
+
+func setupStorage(ctx context.Context, env, dsn string) (storage.Querier, func(context.Context) error, error) {
+	if env == "dev" && dsn == "" {
+		ts, err := teststorage.New(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		return ts, ts.Close, nil
+	} else if env == "prod" {
+		conn, err := pgx.Connect(ctx, dsn)
+		if err != nil {
+			return nil, nil, err
+		}
+		return storage.New(conn), conn.Close, nil
+	}
+	return nil, nil, fmt.Errorf("unsupported environment: %s", env)
 }
 
 func main() {
