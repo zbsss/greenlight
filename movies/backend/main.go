@@ -43,7 +43,11 @@ func mainNoExit() error {
 	if err != nil {
 		return err
 	}
-	defer cleanup(ctx)
+	defer func() {
+		if err := cleanup(ctx); err != nil {
+			logger.Error("failed to clean up storage", "error", err)
+		}
+	}()
 
 	ms := service.New(movieStorage)
 	moviesServer := api.NewServer(ms)
@@ -56,7 +60,7 @@ func mainNoExit() error {
 	return srv.ListenAndServe(ctx)
 }
 
-func setupStorage(ctx context.Context, env string, dsn string) (storage.Querier, func(context.Context) error, error) {
+func setupStorage(ctx context.Context, env, dsn string) (storage.Querier, func(context.Context) error, error) {
 	if env == "dev" && dsn == "" {
 		ts, err := teststorage.New(ctx)
 		if err != nil {

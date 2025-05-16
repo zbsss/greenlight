@@ -115,14 +115,14 @@ func seedMockData(ctx context.Context, q storage.Querier) error {
 		if err != nil {
 			return err
 		}
-
 	}
-	ms, err := q.ListMovies(ctx)
+
+	result, err := q.ListMovies(ctx)
 	if err != nil {
 		return err
 	}
-	if len(ms) != 5 {
-		return fmt.Errorf("expected 5 movies, got %d", len(ms))
+	if len(result) != len(movies) {
+		return fmt.Errorf("expected %d movies, got %d", len(movies), len(result))
 	}
 
 	return nil
