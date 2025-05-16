@@ -68,9 +68,7 @@ func setupStorage(ctx context.Context, env string, dsn string) (storage.Querier,
 		if err != nil {
 			return nil, nil, err
 		}
-		return storage.New(conn), func(ctx context.Context) error {
-			return conn.Close(ctx)
-		}, nil
+		return storage.New(conn), conn.Close, nil
 	}
 	return nil, nil, fmt.Errorf("unsupported environment: %s", env)
 }
