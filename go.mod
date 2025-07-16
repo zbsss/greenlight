@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/justinas/alice v1.2.0
-	github.com/oapi-codegen/runtime v1.1.1
+	github.com/oapi-codegen/runtime v1.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.37.0
 	k8s.io/utils v0.0.0-20241104163129-6fe5fd82f078
